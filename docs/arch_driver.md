@@ -21,3 +21,4 @@
 |              | **C6. プラットフォーム** | 既存 AWS アカウント／MLflow サーバ (ECS/Fargate) |
 |              | **C7. ライセンス & 無料 API** | Apache-2.0（Exparso）／MIT/BSD ライブラリ；X (旧Twitter) は無料枠で取得可能な範囲に限定 |
 |              | **C8. ファイル形式限定** | 入出力 PPTX；抽出は **Exparso (LibreOffice 内部依存) → JSON/PNG**。LibreOffice コンテナは Batch で自動利用し、追加実装コストを最小化 |
+Contains AI-generated edits.

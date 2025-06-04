@@ -96,3 +96,5 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **7/4 金** | コスト最適 | Auto-pause OpenSearch PoC │ GPU Auto-scale Lambda | 料金レポート |
 | **7/5 土** | 仕上げ | README/​docs 更新 │ Demo 追撮 │ バグ修正 | Stretch docs |
 | **7/6 日** | **Stretch 提出** | 最終デモ動画（OSS 比較含む）│ レポート追補 | Stretch 提出一式 |
+
+Contains AI-generated edits.

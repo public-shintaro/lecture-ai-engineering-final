@@ -16,3 +16,4 @@ applyTo: "**"
 - docs/以下のファイルは実装の内容が変わったら一緒に必ず修正してください
 - docs/以下のファイルは内容が変わるような実装は必ず私に許可を得てください。
 - Add a comment at the end of the file: 'Contains AI-generated edits.'
+Contains AI-generated edits.
