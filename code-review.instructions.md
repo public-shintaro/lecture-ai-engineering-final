@@ -8,7 +8,7 @@ applyTo: "**"
     formatter: `ruff`
     linter: `ruff`
     typeChecker: `mypy`
-    licenseChecker: `python-license-check`
+    licenseChecker: `licensecheck`
 
 ## Guidelines
 - [general coding guidelines](https://google.github.io/styleguide/) に従っているか確認
