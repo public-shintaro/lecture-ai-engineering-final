@@ -5,22 +5,54 @@
 C:\Users\0000100142\OneDrive - Sony\src\lecture-ai-engineering-final\docs\AIエンジニアリング実践講座（AIE2504) 最終課題.md
 の内容に従って、AIエンジニアリング実践講座の最終課題を実装します。
 
+## 設計原則
+- DRY:"Don't Repeat Yourself"の略。同じコードを重複させず、一箇所にまとめるという原則
+- KISS:"Keep It Simple, Stupid"の略。コードはできるだけシンプルにすべきという原則
+- YAGNI:"You Aren't Gonna Need It"の略。「今必要な機能‧コード以外は書かない」という原則
+- Do NOT Over Engineering/ビルドトラップがある
+    § 精度100%を目指してしまう
+    § 基盤モデルを使う際に必要以上に高性能なモデルを使ってしまう
+    § ユーザー数が少ない社内システムで秒間数万アクセスに耐えられるアーキテクチャを構築してしまう
+    § ユーザーではないステークホルダーの声を聞いて不要な機能を作ってしまう
+    § 使われていない機能を残し続けてしまう
+
+## Workflow
+ghコマンドを使って下記を実践します。
+- ghコマンドでissueを作成します。
+- issueを見て、実装する内容を決めます。
+- GitHub Flowを採用します。ghコマンドでpull requestを作成します。
+- pull requestを作成したら、レビューを依頼します。
+- レビューが通ったら、マージします。
+- マージしたら、ghコマンドでissueをクローズします。
+
+## 開発環境
+- 開発環境は、Dev Containerを使って構築します。
+- Dev Containerは、Dockerを使って構築します。
+- 開発環境は、Pythonを使って構築します。
+- リポジトリはモノレポジトリでフロントエンドとバックエンドを分けて実装します。
+- フロントエンドは、Next.jsを使って実装します。
+- バックエンドは、FastAPIを使って実装します。
+- バックエンドは、Python 3.11を使って実装します。
+- バックエンドは、[AWSを使います](./docs/system_diagram.md)。
+
 ## テスト
 
-(作成中)
+- ユニットテストを必ず書いてください(TDDの原則に従う)
+- GitHub Actionsを使ってCI/CDを実装します。
+- CI/CDの実装は、GitHub Actionsを使って自動化します。
 
-## コーディング規約
+## コーディングガイドライン
 
-- わかりやすいように適宜コメントを英語で入れてください
+Apply the [general coding guidelines](https://google.github.io/styleguide/) to all code you generate.
+
+- 必ず英語でわかりやすいようにコメントを英語で入れてください
 - docs/以下のファイルは実装の内容が変わったら一緒に必ず修正してください
 - docs/以下のファイルは内容が変わるような実装は必ず私に許可を得てください。
+- Add a comment at the end of the file: 'Contains AI-generated edits.'
 
-## 設計補足
 
+## 開発カレンダー（6 / 3 – 7 / 6 , 1 日あたり **3 h** を基本）  
 
-## スケジュール
-
-### 新・開発カレンダー（6 / 3 – 7 / 6 , 1 日あたり **3 h** を基本）  
 *MVP＝Bedrock 版を 6 / 22 に完成 ⇒ その後ストレッチで OSS‐GPU (ECS/Fargate) 版を 7 / 6 までに実装*
 
 | 日付 | フェーズ | タスク (│=並行可) | 期待アウトプット |
