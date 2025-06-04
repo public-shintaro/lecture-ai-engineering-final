@@ -58,7 +58,7 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | 日付 | フェーズ | タスク (│=並行可) | 期待アウトプット |
 |------|---------|------------------|------------------|
 | **6/3 火** | 計画 / 環境 | キックオフ ─ 要件・Bedrock 方針最終確認 │ GitHub リポジトリ初期化 │ Dev コンテナ作成 | リポジトリ & 開発環境 |
-| **6/4 水** | 環境 | CI 雛形 (GitHub Actions) │ `python-pptx`／`unoconv` 検証 | 抽出 PoC |
+| **6/4 水** | 環境 | CI 雛形 (GitHub Actions) │ Exparso 抽出テスト | pytest tests/test_exparso_pptx.py でサンプル PPTX を解析し JSON が返ることを確認 |
 | **6/5 木** | 環境 | 抽出サービス Docker 化 │ MLflow local 起動 | 抽出 image & MLflow URL |
 | **6/6 金** | 抽出 / Embed | **Exparso 導入 & `parse_pptx()` PoC │ Titan Embeddings v2 API 組込み │ OpenSearch Serverless 作成** | `/embed` 完了 |
 | **6/7 土** | Bedrock | **Bedrock Vision (Claude 3 Image) 連携 │ スライド JSON 拡充** | `/vision` API |
@@ -96,3 +96,4 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **7/4 金** | コスト最適 | Auto-pause OpenSearch PoC │ GPU Auto-scale Lambda | 料金レポート |
 | **7/5 土** | 仕上げ | README/​docs 更新 │ Demo 追撮 │ バグ修正 | Stretch docs |
 | **7/6 日** | **Stretch 提出** | 最終デモ動画（OSS 比較含む）│ レポート追補 | Stretch 提出一式 |
+| **未定**   | **pptx書き戻し** | `python-pptx`／`unoconv` 検証 │ レポート追補 | pptxの動的修正 |
