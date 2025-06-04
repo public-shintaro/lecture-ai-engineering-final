@@ -13,6 +13,9 @@ graph TD
             APIGW -- "/upload" --> LambdaUpload["AWS Lambda: Upload Router"]
             APIGW -- "/feedback" --> LambdaFeedback["AWS Lambda: Feedback Router"]
         end
+        
+        %% ── バックエンド処理API (FastAPI)
+        APIGW -- "/factcheck, /suggest, /vision" --> FastAPI_Logic["FastAPI on Fargate <br/> (FactCheck, Suggest Logic & AI Orchestration)"]
 
         %% ── AI 推論レイヤ ①：Bedrock (MVP – 実線)
         subgraph "Bedrock マネージド AI (MVP 主経路)"
@@ -25,19 +28,21 @@ graph TD
         subgraph "GPU コンテナ群 (OSS Stretch)"
             direction TB
             GPU_EP["GPU Services Endpoint<br/>(ALB / VPC Link)"]
-            GPU_EP --> FastAPI_GPU["FastAPI on Fargate<br/>(FactCheck & Suggest)"]
+            GPU_EP --> FastAPI_GPU["FastAPI on Fargate (OSS Proxy)<br/>(FactCheck & Suggest OSS Path)"]
             FastAPI_GPU -. "LLM推論 (OSS)" .-> LLMSvc["LLM Service<br/>Gemma-3 on vLLM"]
             FastAPI_GPU -. "画像解析 (OSS)" .-> VisionSvc["Vision Service<br/>LLaVA-NeXT"]
         end
 
         %% ── FastAPI ⇆ Bedrock (MVP 実線)
-        APIGW -- "/factcheck, /suggest" --> BedrockLLM
-        APIGW -- "/vision" --> BedrockVision
+        FastAPI_Logic -- "LLM推論 (MVP: Bedrock)" --> BedrockLLM
+        FastAPI_Logic -- "Vision処理 (MVP: Bedrock)" --> BedrockVision
+        FastAPI_Logic -. "LLM/Vision (Stretch: OSS via GPU_EP)" .-> GPU_EP
+
 
         %% ── PPTX 抽出フロー
         LambdaUpload -- "(1) PPTXアップロード" --> S3PPTX[("S3: PPTX 原本バケット")]
         LambdaUpload -- "(2) 抽出キュー" --> SQSExtract["SQS: PPTX 抽出キュー"]
-        SQSExtract --> ExtractorViaBatch["AWS Batch (+Spot)<br/>LibreOffice 抽出"]
+        SQSExtract --> ExtractorViaBatch["AWS Batch (+Spot)<br/>LibreOffice 抽出 (Exparso)"]
         ExtractorViaBatch -- "(3) スライド JSON/PNG" --> S3ProcessedData[("S3: 抽出データ")]
 
         %% ── 埋め込み (MVP=Bedrock、OSSは破線)
@@ -50,8 +55,8 @@ graph TD
         VectorEmbedOSS -. "(5s) 保存" .-> VectorDB
 
         %% ── RAG / 外部情報
-        APIGW -- "(6) Vector 検索" --> VectorDB
-        APIGW -- "(7) Web/学術 API" --> ExternalAPIs["外部API (SerpAPI, Bing, arXiv)"]
+        FastAPI_Logic -- "(6) Vector 検索 (RAG)" --> VectorDB
+        FastAPI_Logic -- "(7) Web/学術 API (RAG)" --> ExternalAPIs["外部API (SerpAPI, Bing, arXiv)"]
 
         %% ── フィードバック & Judge
         LambdaFeedback -- "(8) DynamoDB 保存" --> FeedbackDB[("DynamoDB: Feedback")]
@@ -59,10 +64,17 @@ graph TD
         SQSJudge --> JudgeConsumer["Judge Lambda"]
         JudgeConsumer -- "評価 (MVP: Bedrock)" --> BedrockLLM
         JudgeConsumer -. "評価 (Stretch: OSS)" .-> LLMSvc
+        %% LLMSvcはGPUコンテナ群のOSS LLMを指す想定
 
         %% ── VPC エンドポイント (主要なもののみ)
-        LambdaUpload --> VPCE_S3[("VPCE: S3")]
-        LambdaEmbed --> VPCE_OpenSearch[("VPCE: OpenSearch")]
+        VPCE_S3[("VPC Endpoint <br/> S3")]
+        VPCE_OpenSearch[("VPC Endpoint <br/> OpenSearch")]
+        FastAPI_Logic --> VPCE_S3
+        %% FastAPIからもS3ProcessedData等にアクセスする想定
+        FastAPI_Logic --> VPCE_OpenSearch
+        %% FastAPIからもVectorDBにアクセス
+        %% LambdaUpload --> VPCE_S3 (implicitly covered by Lambda's VPC config)
+        %% LambdaEmbed --> VPCE_OpenSearch (implicitly covered by Lambda's VPC config)
 
     end
 
@@ -72,7 +84,10 @@ graph TD
         DevPC["開発者 PC (RTX 5080)"]
         GitHub["GitHub Actions"]
         DevPC -- "実験管理" --> MLflow
+        GitHub -- "CI/CD" --> FastAPI_Logic
+        %% MVPのFastAPIデプロイ先
         GitHub -- "CI/CD" --> FastAPI_GPU
+        %% StretchのFastAPIデプロイ先 (もし分離する場合)
     end
 
     %% ─── スタイリング ─────────────────────────
@@ -86,15 +101,18 @@ graph TD
     classDef queue fill:#f69,stroke:#333,stroke-width:2px;
     classDef external fill:#ccc,stroke:#333,stroke-width:2px;
     classDef mlops fill:#fcc,stroke:#333,stroke-width:2px;
+    classDef service_compute fill:#eef,stroke:#346,stroke-width:1px;
 
     class User user;
     class FE frontend;
-    class APIGW,LambdaUpload,LambdaFeedback,LambdaEmbed backend_serverless;
+    class APIGW,LambdaUpload,LambdaFeedback,LambdaEmbed,JudgeConsumer backend_serverless;
     class BedrockLLM,BedrockVision,BedrockEmbed bedrock;
-    class GPU_EP,FastAPI_GPU backend_container;
+    class FastAPI_Logic,GPU_EP,FastAPI_GPU backend_container;
     class LLMSvc,VisionSvc ai_model_container;
     class S3PPTX,S3ProcessedData,VectorDB,FeedbackDB storage;
-    class ExtractorViaBatch,JudgeConsumer queue;
+    class ExtractorViaBatch service_compute;
     class SQSExtract,SQSEmbed,SQSJudge queue;
     class ExternalAPIs external;
     class MLflow,DevPC,GitHub mlops;
+    class VectorEmbedOSS ai_model_container;
+    class VPCE_S3,VPCE_OpenSearch storage;
