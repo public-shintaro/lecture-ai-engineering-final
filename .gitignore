@@ -58,3 +58,5 @@ Thumbs.db
 
 # Sensitive docs
 docs/AIエンジニアリング実践講座（AIE2504) 最終課題.md
+tests/LLM2023/
+tests/LLM2024/

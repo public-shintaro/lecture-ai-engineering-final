@@ -1,0 +1,2 @@
+exparso>=0.0.2
+pytest>=8.0
