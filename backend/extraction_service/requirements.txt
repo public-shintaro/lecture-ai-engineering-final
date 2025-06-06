@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+exparso
+python-magic
+pillow
+python-multipart
