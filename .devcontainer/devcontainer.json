@@ -25,7 +25,7 @@
                         "source.organizeImports": "explicit"
                     }
                 },
-                "ruff.path": [], 
+                "ruff.path": [],
                 "mypy.executablePath": ""
             },
             "extensions": [
