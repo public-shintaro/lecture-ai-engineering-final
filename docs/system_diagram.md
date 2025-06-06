@@ -13,7 +13,7 @@ graph TD
             APIGW -- "/upload" --> LambdaUpload["AWS Lambda: Upload Router"]
             APIGW -- "/feedback" --> LambdaFeedback["AWS Lambda: Feedback Router"]
         end
-        
+
         %% ── バックエンド処理API (FastAPI)
         APIGW -- "/factcheck, /suggest, /vision" --> FastAPI_Logic["FastAPI on Fargate <br/> (FactCheck, Suggest Logic & AI Orchestration)"]
 

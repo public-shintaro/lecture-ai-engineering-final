@@ -35,7 +35,7 @@ jobs:
       - name: Run pre-commit hooks
         run: |
           pre-commit run --all-files
-          
+
       - name: Install LibreOffice (headless)
         run: |
           sudo apt-get update
