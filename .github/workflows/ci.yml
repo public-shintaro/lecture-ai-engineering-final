@@ -32,12 +32,16 @@ jobs:
           # Install development dependencies
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
+      - name: Run pre-commit hooks
+        run: |
+          pre-commit run --all-files
+          
       - name: Install LibreOffice (headless)
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             libreoffice-core libreoffice-impress libreoffice-writer
-            
+
       - name: Run pytest
         run: pytest -q tests/
         # Added 'tests/' to specify the target directory for pytest for clarity.
