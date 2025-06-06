@@ -48,10 +48,10 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 - 必ず英語でわかりやすいようにコメントを英語で入れてください
 - docs/以下のファイルは実装の内容が変わったら一緒に必ず修正してください
 - docs/以下のファイルは内容が変わるような実装は必ず私に許可を得てください。
-- Add a comment at the end of the file: 'Contains AI-generated edits.'
+- Add a comment at the end of the file: 'Contains some AI-generated edits.'
 
 
-## 開発カレンダー（6 / 3 – 7 / 6 , 1 日あたり **3 h** を基本）  
+## 開発カレンダー（6 / 3 – 7 / 6 , 1 日あたり **3 h** を基本）
 
 *MVP＝Bedrock 版を 6 / 22 に完成 ⇒ その後ストレッチで OSS‐GPU (ECS/Fargate) 版を 7 / 6 までに実装*
 
