@@ -70,24 +70,25 @@ graph TD
         VPCE_S3[("VPC Endpoint <br/> S3")]
         VPCE_OpenSearch[("VPC Endpoint <br/> OpenSearch")]
         FastAPI_Logic --> VPCE_S3
-        %% FastAPIからもS3ProcessedData等にアクセスする想定
         FastAPI_Logic --> VPCE_OpenSearch
-        %% FastAPIからもVectorDBにアクセス
-        %% LambdaUpload --> VPCE_S3 (implicitly covered by Lambda's VPC config)
-        %% LambdaEmbed --> VPCE_OpenSearch (implicitly covered by Lambda's VPC config)
-
     end
 
-    %% ─── MLOps ────────────────────────────────
+    %% ─── MLOps & 開発支援 ────────────────────────
     subgraph "MLOps & 開発支援"
-        MLflow["MLflow"]
-        DevPC["開発者 PC (RTX 5080)"]
-        GitHub["GitHub Actions"]
+        DevPC["開発者 PC (Dev Container)"]
+
+        subgraph "ローカル開発スタック (docker-compose)"
+            direction LR
+            DevPC -- "docker compose up" --> ComposeServices{{"docker-compose.dev.yml"}}
+            ComposeServices --> ExtractionSvc["Extraction Service"]
+            ComposeServices --> MLflow["MLflow Tracking Server"]
+        end
+
+        DevPC -- "API Test" --> ExtractionSvc
         DevPC -- "実験管理" --> MLflow
-        GitHub -- "CI/CD" --> FastAPI_Logic
-        %% MVPのFastAPIデプロイ先
+
+        GitHub["GitHub Actions"] -- "CI/CD" --> FastAPI_Logic
         GitHub -- "CI/CD" --> FastAPI_GPU
-        %% StretchのFastAPIデプロイ先 (もし分離する場合)
     end
 
     %% ─── スタイリング ─────────────────────────
@@ -113,6 +114,7 @@ graph TD
     class ExtractorViaBatch service_compute;
     class SQSExtract,SQSEmbed,SQSJudge queue;
     class ExternalAPIs external;
-    class MLflow,DevPC,GitHub mlops;
+    class DevPC,GitHub mlops;
+    class MLflow,ExtractionSvc,ComposeServices backend_container;
     class VectorEmbedOSS ai_model_container;
     class VPCE_S3,VPCE_OpenSearch storage;

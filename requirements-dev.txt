@@ -1,3 +1,4 @@
 exparso>=0.0.2
 pytest>=8.0
 pre-commit>=3.7.0
+requests>=2.28.1
