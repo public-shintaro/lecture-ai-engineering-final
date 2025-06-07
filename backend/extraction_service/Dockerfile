@@ -7,7 +7,7 @@ FROM python:3.11-slim
 #    * libmagic はファイルタイプ判定（exparso 内部）で稀に必要
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libmagic1 && \
+        libmagic1 \
         curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
