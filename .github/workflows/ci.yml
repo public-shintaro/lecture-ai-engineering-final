@@ -11,6 +11,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      extraction:
+        build: ./backend/extraction_service
+        ports:
+          - 8080:8080
+      mlflow:
+        image: ghcr.io/mlflow/mlflow:v2.12.1 # 修正済みの正しいタグを使用
+        ports:
+          - 5000:5000
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,4 +55,12 @@ jobs:
       - name: Run pytest
         run: pytest -q tests/
         # Added 'tests/' to specify the target directory for pytest for clarity.
+
+      - name: Run end-to-end tests
+        run: |
+          # テストコードがサービスに接続できるよう、環境変数を設定
+          export EXTRACTION_API_URL="http://localhost:8080"
+          export MLFLOW_TRACKING_URI="http://localhost:5000"
+          pytest tests/extraction_e2e.py
+
 # Contains AI-generated edits.

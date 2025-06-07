@@ -1,46 +1,36 @@
 {
   "name": "lecture-ai-engineering",
-    // --- ここで Dockerfile ビルドを指定 ---
-  "build": {
-    "context": "..",
-    // その中の .devcontainer/Dockerfile を使う
-    "dockerfile": "Dockerfile"
+  "dockerComposeFile": [
+    "../docker-compose.dev.yml"
+  ],
+  "service": "develop",
+  "workspaceFolder": "/workspaces/lecture-ai-engineering-final",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+          }
+        },
+        "ruff.path": [],
+        "mypy.executablePath": ""
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "ms-python.mypy",
+        "GitHub.vscode-pull-request-github"
+      ]
+    }
   },
-
-  "features": {
-    "ghcr.io/devcontainers/features/docker-from-docker:1": {}
-  },
-
-  // コンテナ作成後に依存パッケージをインストール
-  "postCreateCommand": "pip install -r requirements.txt",
-    "onCreateCommand": "echo 'Attempting to install uv...' && \\\ncurl -LsSf https://astral.sh/uv/install.sh | sh && \\\n\necho 'Attempting to install GitHub CLI (gh)...' && \\\nsudo apt-get update && sudo apt-get install -y curl gpg && \\\ncurl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && \\\nsudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && \\\necho \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \\\nsudo apt update && \\\nsudo apt install gh -y && \\\n\necho 'Attempting to install review tools with uv...' && \\\nsudo /home/vscode/.local/bin/uv pip install --system ruff mypy licensecheck && \\\n\necho 'Checking installed tool versions...' && \\\n/home/vscode/.local/bin/uv --version && \\\ngh --version && \\\nruff --version && \\\nmypy --version && \\\nlicensecheck --help > /dev/null",
-    "customizations": {
-        "vscode": {
-            "settings": {
-                "python.defaultInterpreterPath": "/usr/local/bin/python",
-                "python.linting.enabled": true,
-                "python.linting.pylintEnabled": false,
-                "python.formatting.provider": "none",
-                "[python]": {
-                    "editor.defaultFormatter": "charliermarsh.ruff",
-                    "editor.formatOnSave": true,
-                    "editor.codeActionsOnSave": {
-                        "source.fixAll": "explicit",
-                        "source.organizeImports": "explicit"
-                    }
-                },
-                "ruff.path": [],
-                "mypy.executablePath": ""
-            },
-            "extensions": [
-                "ms-python.python",
-                "ms-python.vscode-pylance",
-                "charliermarsh.ruff",
-                "ms-python.mypy",
-                "GitHub.vscode-pull-request-github" // GitHub Pull Requests and Issues 拡張機能 (ghと合わせて便利)
-            ]
-        }
-    },
-    "remoteUser": "vscode",
-    "forwardPorts": [8000]
+  "remoteUser": "root"
 }

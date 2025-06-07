@@ -1,0 +1,54 @@
+
+services:
+  # 0) 開発環境  ────────────────────────────
+  develop:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: develop_container
+    # コンテナを起動し続けるためのコマンド
+    command: sleep infinity
+    volumes:
+      # プロジェクト全体をコンテナ内にマウント
+      - .:/workspaces/lecture-ai-engineering-final:cached
+      # Docker-from-Docker を実現するためにDockerソケットをマウント
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backend-net
+
+  # 1) 抽出サービス  ────────────────────────────
+  extraction:
+    build: ./backend/extraction_service        # ← Step1 の Dockerfile
+    container_name: extraction_service
+    ports:
+      - "8080:8080"
+    environment:
+      # FastAPI が MLflow にロギングするとき用
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    volumes:
+      # 例：スライドを一時保存したい場合
+      - ./slides:/data
+    depends_on:
+      - mlflow
+    networks:
+      - backend-net
+
+  # 2) MLflow Tracking Server  ─────────────────
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.22.1
+    container_name: mlflow_server
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlruns
+      --host 0.0.0.0 --port 5000
+    volumes:
+      - ./mlruns:/mlruns         # run・artifact 保存先
+    ports:
+      - "5000:5000"
+    networks:
+      - backend-net
+
+networks:
+  backend-net:
+    driver: bridge
