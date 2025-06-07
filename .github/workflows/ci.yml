@@ -32,6 +32,12 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
+      - name: Install LibreOffice (headless)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libreoffice-core libreoffice-impress libreoffice-writer
+
       # pre-commitはCIで必要な開発ツールを別途インストールする必要があるため、
       # 一旦コメントアウトしてCIの成功を優先します。
       # - name: Run pre-commit hooks
