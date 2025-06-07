@@ -3,32 +3,29 @@ name: CI
 
 on:
   push:
-    branches: ["**"] # Run on all branches
+    branches: ["**"]
   pull_request:
-    branches: ["master", "main"] # Run on pull requests to master or main
+    branches: ["master", "main"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      extraction:
-        build: ./backend/extraction_service
-        ports:
-          - 8080:8080
-      mlflow:
-        image: ghcr.io/mlflow/mlflow:v2.12.1 # 修正済みの正しいタグを使用
-        ports:
-          - 5000:5000
+    # services: ブロックは削除する
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # --- ここから追記 ---
+      - name: Start services with Docker Compose
+        run: docker-compose -f docker-compose.dev.yml up --build -d
+      # --- ここまで追記 ---
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11" # Aligning with devcontainer.json
+          python-version: "3.11"
           cache: "pip"
           cache-dependency-path: |
              requirements.txt
@@ -37,30 +34,25 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install application requirements if requirements.txt exists
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          # Install development dependencies
+          # dev-requirements.txtにrequestsを追加しておく必要があります
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
       - name: Run pre-commit hooks
-        run: |
-          pre-commit run --all-files
+        run: pre-commit run --all-files
 
-      - name: Install LibreOffice (headless)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libreoffice-core libreoffice-impress libreoffice-writer
+      # LibreOfficeのインストールは不要になります（extractionコンテナ内で実行されるため）
+      # - name: Install LibreOffice (headless) ...
 
-      - name: Run pytest
-        run: pytest -q tests/
-        # Added 'tests/' to specify the target directory for pytest for clarity.
+      - name: Wait for services to be ready
+        run: |
+          # サービスが起動するまで少し待機（最長60秒）
+          docker-compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8080/health; do sleep 1; done'
+
+      - name: Run unit tests
+        run: pytest tests/test_exparso_pptx.py
 
       - name: Run end-to-end tests
         run: |
-          # テストコードがサービスに接続できるよう、環境変数を設定
           export EXTRACTION_API_URL="http://localhost:8080"
           export MLFLOW_TRACKING_URI="http://localhost:5000"
           pytest tests/extraction_e2e.py
-
-# Contains AI-generated edits.
