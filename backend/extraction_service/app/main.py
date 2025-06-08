@@ -14,11 +14,11 @@ print("--- DEBUGGING ENVIRONMENT VARIABLES ---")
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 session_token = os.getenv("AWS_SESSION_TOKEN")
-print(f"AWS_ACCESS_KEY_ID: {access_key}")
+print(f"AWS_ACCESS_KEY_ID: {'[SET]' if access_key else '[NOT SET]'}")
 # シークレットキーそのものは表示せず、存在有無だけ確認
 print(f"AWS_SECRET_ACCESS_KEY: {'[SET]' if secret_key else '[NOT SET]'}")
 # セッショントークンは空文字かどうかが重要なのでクォートで囲って表示
-print(f"AWS_SESSION_TOKEN: '{session_token}'")
+print(f"AWS_SESSION_TOKEN: {'[SET]' if session_token else '[NOT SET]'}'")
 print("--- END DEBUGGING ---")
 # --- ↑↑↑ ここまで追加 ↑↑↑ ---
 

@@ -12,14 +12,6 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-try:
-    ddb = boto3.resource("dynamodb", region_name=os.getenv("AWS_REGION"))
-    table = ddb.Table(os.getenv("DDB_TABLE", "SlideVectors"))
-    logger.info(f"Successfully initialized DynamoDB client for table: {table.name}")
-except Exception as e:
-    logger.error(f"Failed to initialize DynamoDB client: {e}")
-    table = None
-
 
 def _to_b64(vec: list[float]) -> str:
     """Converts a list of floats to a base64 encoded string."""
@@ -28,6 +20,15 @@ def _to_b64(vec: list[float]) -> str:
 
 def put_slide(pptx_id: str, slide_no: int, text: str, vec: list[float]):
     """Puts a single slide's data into the DynamoDB table."""
+
+    try:
+        ddb = boto3.resource("dynamodb", region_name=os.getenv("AWS_REGION"))
+        table = ddb.Table(os.getenv("DDB_TABLE", "SlideVectors"))
+        logger.info(f"Successfully initialized DynamoDB client for table: {table.name}")
+    except Exception as e:
+        logger.error(f"Failed to initialize DynamoDB client: {e}")
+        table = None
+
     if not table:
         raise ConnectionError("DynamoDB table is not initialized.")
 
