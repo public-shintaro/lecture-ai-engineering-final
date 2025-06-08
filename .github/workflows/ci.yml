@@ -15,6 +15,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create .env file for CI
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_REGION=us-east-1" >> .env
+          echo "DDB_TABLE=SlideVectors" >> .env
+          echo "MLFLOW_TRACKING_URI=http://mlflow:5000" >> .env
+
       - name: Start services with Docker Compose
         # --- ここを修正 ---
         run: docker compose -f docker-compose.dev.yml up --build -d
