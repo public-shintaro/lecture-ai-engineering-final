@@ -4,3 +4,6 @@ exparso
 python-magic
 pillow
 python-multipart
+boto3
+python-dotenv
+numpy

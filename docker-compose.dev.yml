@@ -25,9 +25,13 @@ services:
     environment:
       # FastAPI が MLflow にロギングするとき用
       - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - AWS_REGION=us-east-1
+      - DDB_TABLE=SlideVectors
     volumes:
       # 例：スライドを一時保存したい場合
       - ./slides:/data
+      # ↓↓↓ AWS認証情報がマウントされているか確認 ↓↓↓
+      - ~/.aws:/root/.aws:ro
     depends_on:
       - mlflow
     networks:
