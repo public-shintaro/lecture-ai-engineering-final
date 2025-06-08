@@ -1,10 +1,27 @@
 import logging
+import os
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 # servicesモジュールを絶対パスでインポート
 from app.services import embedding, parser, vector_store
+
+# 全てのインポート処理が始まる前に、.envファイルの内容を環境変数に読み込む
+load_dotenv()
+print("--- DEBUGGING ENVIRONMENT VARIABLES ---")
+access_key = os.getenv("AWS_ACCESS_KEY_ID")
+secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+session_token = os.getenv("AWS_SESSION_TOKEN")
+print(f"AWS_ACCESS_KEY_ID: {access_key}")
+# シークレットキーそのものは表示せず、存在有無だけ確認
+print(f"AWS_SECRET_ACCESS_KEY: {'[SET]' if secret_key else '[NOT SET]'}")
+# セッショントークンは空文字かどうかが重要なのでクォートで囲って表示
+print(f"AWS_SESSION_TOKEN: '{session_token}'")
+print("--- END DEBUGGING ---")
+# --- ↑↑↑ ここまで追加 ↑↑↑ ---
+
 
 # ロギング設定
 logging.basicConfig(level=logging.INFO)

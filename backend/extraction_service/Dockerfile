@@ -23,13 +23,14 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 WORKDIR /app
 
 # 3) 依存パッケージをコピーしてインストール
-COPY requirements.txt .
+COPY backend/extraction_service/requirements.txt .
+COPY .env .
 RUN cat requirements.txt
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4) アプリケーションコードをコピー
-COPY app ./app
+COPY backend/extraction_service/app ./app
 
 # 5) ポート設定（FastAPI 既定 8080 として例示）
 EXPOSE 8080

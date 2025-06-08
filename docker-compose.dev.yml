@@ -18,24 +18,17 @@ services:
 
   # 1) 抽出サービス  ────────────────────────────
   extraction:
-    build: ./backend/extraction_service        # ← Step1 の Dockerfile
+    build:
+      context: .  # ビルドコンテキストをプロジェクトルートに設定
+      dockerfile: backend/extraction_service/Dockerfile # Dockerfileの場所を明記
     container_name: extraction_service
     ports:
       - "8080:8080"
     environment:
-      # FastAPI が MLflow にロギングするとき用
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
-      - AWS_REGION=us-east-1
-      - DDB_TABLE=SlideVectors
-      - AWS_PROFILE=lecture-dev-final
-      - AWS_SDK_LOAD_CONFIG=1        # ← これを追加
-      - AWS_PAGER= ""           # ← これで “less が無い” 問題を無効化
-      - AWS_CONFIG_FILE=/root/.aws/config   # ← 明示パスを追加
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+      - AWS_PAGER=""
     volumes:
       - ./slides:/data
-      - type: volume
-        source: awscreds         # ← named volume
-        target: /root/.aws
 
     depends_on:
       - mlflow
@@ -61,8 +54,3 @@ services:
 networks:
   backend-net:
     driver: bridge
-
-volumes:
-  awscreds:
-    external: true   # ← 追加
-    name: awscreds   # ← docker volume create で作った名前
