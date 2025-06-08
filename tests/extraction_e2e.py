@@ -44,7 +44,7 @@ def test_extract_endpoint_with_sample_pptx():
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                 )
             }
-            response = requests.post(f"{API_URL}/extract", files=files, timeout=20)
+            response = requests.post(f"{API_URL}/embed", files=files, timeout=20)
 
         # Assert that the request was successful
         response.raise_for_status()

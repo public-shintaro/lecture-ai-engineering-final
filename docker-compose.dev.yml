@@ -27,11 +27,16 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - AWS_REGION=us-east-1
       - DDB_TABLE=SlideVectors
+      - AWS_PROFILE=lecture-dev-final
+      - AWS_SDK_LOAD_CONFIG=1        # ← これを追加
+      - AWS_PAGER= ""           # ← これで “less が無い” 問題を無効化
+      - AWS_CONFIG_FILE=/root/.aws/config   # ← 明示パスを追加
     volumes:
-      # 例：スライドを一時保存したい場合
       - ./slides:/data
-      # ↓↓↓ AWS認証情報がマウントされているか確認 ↓↓↓
-      - ~/.aws:/root/.aws:ro
+      - type: volume
+        source: awscreds         # ← named volume
+        target: /root/.aws
+
     depends_on:
       - mlflow
     networks:
@@ -56,3 +61,8 @@ services:
 networks:
   backend-net:
     driver: bridge
+
+volumes:
+  awscreds:
+    external: true   # ← 追加
+    name: awscreds   # ← docker volume create で作った名前
