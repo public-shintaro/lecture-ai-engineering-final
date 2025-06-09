@@ -66,3 +66,6 @@ jobs:
           export EXTRACTION_API_URL="http://localhost:8080"
           export MLFLOW_TRACKING_URI="http://localhost:5000"
           pytest tests/extraction_e2e.py
+      - name: Dump logs if failed
+        if: failure()
+        run: docker compose logs extraction
