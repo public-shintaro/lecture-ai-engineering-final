@@ -1,17 +1,43 @@
 import logging
+import os
 
-from fastapi import FastAPI, File, UploadFile
+from dotenv import load_dotenv
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-# Configure logging
+# visionルーターをインポート
+from app.routers import vision
+
+# servicesモジュールを絶対パスでインポート
+from app.services import embedding, parser, vector_store
+
+# 全てのインポート処理が始まる前に、.envファイルの内容を環境変数に読み込む
+load_dotenv()
+print("--- DEBUGGING ENVIRONMENT VARIABLES ---")
+access_key = os.getenv("AWS_ACCESS_KEY_ID")
+secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+session_token = os.getenv("AWS_SESSION_TOKEN")
+print(f"AWS_ACCESS_KEY_ID: {'[SET]' if access_key else '[NOT SET]'}")
+# シークレットキーそのものは表示せず、存在有無だけ確認
+print(f"AWS_SECRET_ACCESS_KEY: {'[SET]' if secret_key else '[NOT SET]'}")
+# セッショントークンは空文字かどうかが重要なのでクォートで囲って表示
+print(f"AWS_SESSION_TOKEN: {'[SET]' if session_token else '[NOT SET]'}'")
+print("--- END DEBUGGING ---")
+# --- ↑↑↑ ここまで追加 ↑↑↑ ---
+
+
+# ロギング設定
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Extraction Service",
-    description="Extracts content from presentation files.",
-    version="0.1.0",
+    title="Extraction and Embedding Service",
+    description="Extracts content from presentation files, generates embeddings, and indexes them into DynamoDB.",
+    version="0.3.0",
 )
+
+# visionルーターをアプリケーションに含める
+app.include_router(vision.router)
 
 
 @app.get("/health", summary="Health Check")
@@ -23,24 +49,53 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.post("/extract", summary="Extract Content from PPTX")
-async def extract_content(file: UploadFile = File(...)):
+@app.post("/embed", summary="Extract, Embed, and Index PPTX to DynamoDB")
+async def embed_document(file: UploadFile = File(...)):
     """
-    (Placeholder) Endpoint to extract content from an uploaded PPTX file.
-    In a real implementation, this would use exparso to process the file.
+    Receives a PPTX file and performs the following steps:
+    1.  Extracts text content from each slide.
+    2.  Generates vector embeddings for each slide's text.
+    3.  Indexes the text and vectors into DynamoDB.
     """
-    logger.info(f"Received file: {file.filename} of type {file.content_type}")
-    # This is a placeholder response.
-    # The actual extraction logic will be implemented later.
-    return JSONResponse(
-        status_code=200,
-        content={
-            "filename": file.filename,
-            "content_type": file.content_type,
-            "message": "File received, processing logic not yet implemented.",
-            "slides": [],  # Placeholder for extracted data
-        },
-    )
+    if not file.filename.endswith(".pptx"):
+        raise HTTPException(
+            status_code=400, detail="Invalid file type. Only .pptx is supported."
+        )
+
+    try:
+        logger.info(f"Starting embedding process for file: {file.filename}")
+
+        slide_texts = parser.extract_text_from_pptx(file)
+        if not slide_texts:
+            raise HTTPException(status_code=400, detail="Could not extract any text.")
+
+        slide_vectors = embedding.get_embeddings(slide_texts)
+
+        for idx, (text, vec) in enumerate(zip(slide_texts, slide_vectors), start=1):
+            if text and vec:
+                vector_store.put_slide(
+                    pptx_id=file.filename, slide_no=idx, text=text, vec=vec
+                )
+
+        logger.info(f"Successfully processed and indexed {file.filename}")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "filename": file.filename,
+                "message": "File successfully extracted, embedded, and indexed into DynamoDB.",
+                "slides_processed": len(slide_texts),
+            },
+        )
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        logger.error(
+            f"An unexpected error occurred during embedding for {file.filename}: {e}",
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=500, detail=f"An internal error occurred: {str(e)}"
+        )
 
 
 # Contains AI-generated edits.

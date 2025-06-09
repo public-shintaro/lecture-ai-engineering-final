@@ -60,7 +60,7 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **6/3 火** | 計画 / 環境 | キックオフ ─ 要件・Bedrock 方針最終確認 │ GitHub リポジトリ初期化 │ Dev コンテナ作成 | リポジトリ & 開発環境 |
 | **6/4 水** | 環境 | CI 雛形 (GitHub Actions) │ Exparso 抽出テスト | pytest tests/test_exparso_pptx.py でサンプル PPTX を解析し JSON が返ることを確認 |
 | **6/5 木** | 環境 | 抽出サービス Docker 化 │ MLflow local 起動 | 抽出 image & MLflow URL |
-| **6/6 金** | 抽出 / Embed | **Exparso 導入 & `parse_pptx()` PoC │ Titan Embeddings v2 API 組込み │ OpenSearch Serverless 作成** | `/embed` 完了 |
+| **6/6 金** | 抽出 / Embed | **Exparso 導入 & `parse_pptx()` PoC │ Titan Embeddings v2 API 組込み │ DynamoDB+自力サーチ(cos類似度) 作成** | `/embed` 完了 |
 | **6/7 土** | Bedrock | **Bedrock Vision (Claude 3 Image) 連携 │ スライド JSON 拡充** | `/vision` API |
 | **6/8 日** | **バッファ** | （遅延吸収 or 追加微調整） |  |
 | **6/9 月** | アルゴ | RAG ファクトチェック関数 │ Precision/Recall notebook | 不整合 JSON |

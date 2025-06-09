@@ -15,6 +15,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create .env file for CI
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_SESSION_TOKEN=${{ secrets.AWS_SESSION_TOKEN }}" >> .env
+          echo "AWS_REGION=us-east-1" >> .env
+          echo "DDB_TABLE=SlideVectors" >> .env
+          echo "MLFLOW_TRACKING_URI=http://mlflow:5000" >> .env
+
       - name: Start services with Docker Compose
         # --- ここを修正 ---
         run: docker compose -f docker-compose.dev.yml up --build -d
@@ -58,3 +67,6 @@ jobs:
           export EXTRACTION_API_URL="http://localhost:8080"
           export MLFLOW_TRACKING_URI="http://localhost:5000"
           pytest tests/extraction_e2e.py
+      - name: Dump logs if failed
+        if: failure()
+        run: docker compose -f docker-compose.dev.yml logs extraction

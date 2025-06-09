@@ -8,20 +8,30 @@ FROM python:3.11-slim
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libmagic1 \
+        libreoffice-core \
+        libreoffice-impress \
+        unzip \
         curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -rf awscliv2.zip aws
 
 # 2) 作業ディレクトリ
 WORKDIR /app
 
 # 3) 依存パッケージをコピーしてインストール
-COPY requirements.txt .
+COPY backend/extraction_service/requirements.txt .
+COPY .env .
+COPY backend/extraction_service/templates /app/templates
 RUN cat requirements.txt
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4) アプリケーションコードをコピー
-COPY app ./app
+COPY backend/extraction_service/app ./app
 
 # 5) ポート設定（FastAPI 既定 8080 として例示）
 EXPOSE 8080
