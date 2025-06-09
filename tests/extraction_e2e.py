@@ -53,7 +53,7 @@ def test_extract_endpoint_with_sample_pptx():
         # Assert the structure of the JSON response
         assert "filename" in data
         assert "message" in data
-        assert "slide_texts" in data
+        assert "slides_processed" in data
         assert data["filename"] == sample_file_path.name
 
     except requests.exceptions.RequestException as e:
