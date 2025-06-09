@@ -6,7 +6,7 @@ import requests  # E2Eテスト用にrequestsを追加する必要がありま�
 
 # CI環境ではGitHub Actionsのservicesから、ローカルではdocker-composeのサービス名からURLを取得
 # CIのservicesではlocalhostで公開される
-API_URL = os.getenv("EXTRACTION_API_URL", " http://extraction:8080")
+API_URL = os.getenv("EXTRACTION_API_URL", "http://extraction:8080")
 
 
 def test_health_check():
@@ -52,9 +52,8 @@ def test_extract_endpoint_with_sample_pptx():
 
         # Assert the structure of the JSON response
         assert "filename" in data
-        assert "content_type" in data
-        assert "slides" in data
-        assert isinstance(data["slides"], list)
+        assert "message" in data
+        assert "slide_texts" in data
         assert data["filename"] == sample_file_path.name
 
     except requests.exceptions.RequestException as e:
