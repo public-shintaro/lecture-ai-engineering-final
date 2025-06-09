@@ -6,7 +6,7 @@ import requests  # E2Eテスト用にrequestsを追加する必要がありま�
 
 # CI環境ではGitHub Actionsのservicesから、ローカルではdocker-composeのサービス名からURLを取得
 # CIのservicesではlocalhostで公開される
-API_URL = os.getenv("EXTRACTION_API_URL", "http://localhost:8080")
+API_URL = os.getenv("EXTRACTION_API_URL", " http://extraction:8080")
 
 
 def test_health_check():
@@ -59,7 +59,7 @@ def test_extract_endpoint_with_sample_pptx():
 
     except requests.exceptions.RequestException as e:
         pytest.fail(
-            f"Failed to connect or get a valid response from the /extract endpoint. Error: {e}"
+            f"Failed to connect or get a valid response from the /embed endpoint. Error: {e}"
         )
 
 
