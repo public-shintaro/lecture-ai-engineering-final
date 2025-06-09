@@ -68,4 +68,4 @@ jobs:
           pytest tests/extraction_e2e.py
       - name: Dump logs if failed
         if: failure()
-        run: docker compose logs extraction
+        run: docker compose -f docker-compose.dev.yml logs extraction
