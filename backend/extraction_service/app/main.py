@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
+# visionルーターをインポート
+from app.routers import vision
+
 # servicesモジュールを絶対パスでインポート
 from app.services import embedding, parser, vector_store
 
@@ -32,6 +35,9 @@ app = FastAPI(
     description="Extracts content from presentation files, generates embeddings, and indexes them into DynamoDB.",
     version="0.3.0",
 )
+
+# visionルーターをアプリケーションに含める
+app.include_router(vision.router)
 
 
 @app.get("/health", summary="Health Check")

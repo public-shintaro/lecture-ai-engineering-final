@@ -20,7 +20,7 @@ graph TD
         %% ── AI 推論レイヤ ①：Bedrock (MVP – 実線)
         subgraph "Bedrock マネージド AI (MVP 主経路)"
             BedrockLLM["Bedrock LLM<br/>(Claude 3／Titan)"]
-            BedrockVision["Bedrock Vision<br/>(Claude 3 Image or Rekognition+Titan)"]
+            BedrockVision["Bedrock Vision<br/>(Amazon Nova Lite)"]
             BedrockEmbed["Bedrock Titan Embeddings v2"]
         end
 
@@ -51,11 +51,12 @@ graph TD
         LambdaEmbed -- "(4) Titan Embeddings (MVP)" --> BedrockEmbed
         LambdaEmbed -. "(OSS bge/gte Stretch)" .-> VectorEmbedOSS["OSS Embedding (bge/gte)"]
 
-        BedrockEmbed -- "(5) 保存" --> VectorDB["OpenSearch Serverless<br/>(Vector Index)"]
-        VectorEmbedOSS -. "(5s) 保存" .-> VectorDB
+        %% ── VectorDB
+        BedrockEmbed -- "(5) 保存" --> VectorDDB[("DynamoDB<br/>(Vector & Metadata Store)")]
+        VectorEmbedOSS -. "(5s) 保存" .-> VectorDDB
 
         %% ── RAG / 外部情報
-        FastAPI_Logic -- "(6) Vector 検索 (RAG)" --> VectorDB
+        FastAPI_Logic -- "(6) Vector 検索 (RAG)" --> VectorDDB
         FastAPI_Logic -- "(7) Web/学術 API (RAG)" --> ExternalAPIs["外部API (SerpAPI, Bing, arXiv)"]
 
         %% ── フィードバック & Judge
@@ -68,9 +69,9 @@ graph TD
 
         %% ── VPC エンドポイント (主要なもののみ)
         VPCE_S3[("VPC Endpoint <br/> S3")]
-        VPCE_OpenSearch[("VPC Endpoint <br/> OpenSearch")]
+        VPCE_DynamoDB[("VPC Endpoint <br/> DynamoDB")]
         FastAPI_Logic --> VPCE_S3
-        FastAPI_Logic --> VPCE_OpenSearch
+        FastAPI_Logic --> VPCE_DynamoDB
     end
 
     %% ─── MLOps & 開発支援 ────────────────────────
@@ -110,11 +111,11 @@ graph TD
     class BedrockLLM,BedrockVision,BedrockEmbed bedrock;
     class FastAPI_Logic,GPU_EP,FastAPI_GPU backend_container;
     class LLMSvc,VisionSvc ai_model_container;
-    class S3PPTX,S3ProcessedData,VectorDB,FeedbackDB storage;
+    class S3PPTX,S3ProcessedData,VectorDDB,FeedbackDB storage;
     class ExtractorViaBatch service_compute;
     class SQSExtract,SQSEmbed,SQSJudge queue;
     class ExternalAPIs external;
     class DevPC,GitHub mlops;
     class MLflow,ExtractionSvc,ComposeServices backend_container;
     class VectorEmbedOSS ai_model_container;
-    class VPCE_S3,VPCE_OpenSearch storage;
+    class VPCE_S3,VPCE_DynamoDB storage;

@@ -25,6 +25,7 @@ WORKDIR /app
 # 3) 依存パッケージをコピーしてインストール
 COPY backend/extraction_service/requirements.txt .
 COPY .env .
+COPY backend/extraction_service/templates /app/templates
 RUN cat requirements.txt
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
