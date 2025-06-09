@@ -63,6 +63,6 @@ jobs:
 
       - name: Run end-to-end tests
         run: |
-          export EXTRACTION_API_URL="http://extraction:8080"
-          export MLFLOW_TRACKING_URI="http://mlflow:5000"
+          export EXTRACTION_API_URL="http://localhost:8080"
+          export MLFLOW_TRACKING_URI="http://localhost:5000"
           pytest tests/extraction_e2e.py
