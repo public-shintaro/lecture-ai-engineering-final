@@ -34,7 +34,13 @@ RUN DOCKER_COMPOSE_VERSION=v2.27.0 \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # uv を使って開発ツールをインストール
-RUN /root/.local/bin/uv pip install --system ruff mypy
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+
+# uv を使って開発ツールとプロジェクトの依存関係をインストール
+# --system オプションで、uvが管理するグローバルな環境にインストールする
+RUN /root/.local/bin/uv pip install --system ruff mypy \
+    && /root/.local/bin/uv pip install --system -r /tmp/requirements-dev.txt \
+    && rm /tmp/requirements-dev.txt
 
 # コンテナ内でgitの所有権エラーが出ないようにするための設定
 RUN git config --global --add safe.directory /workspaces/lecture-ai-engineering-final

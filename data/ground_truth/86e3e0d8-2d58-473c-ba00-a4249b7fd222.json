@@ -1,0 +1,20 @@
+[
+  {
+    "chunk_id": "86e3e0d8-2d58-473c-ba00-a4249b7fd222-chunk-0000",
+    "claim_text": "この資料は顧客に提出する最終報告書である。",
+    "expected_verdict": "contradiction",
+    "reason": "Chunk 0に『テスト』、Chunk 1に『サンプル』という記述があり、最終報告書であるという主張と矛盾するため。"
+  },
+  {
+    "chunk_id": "86e3e0d8-2d58-473c-ba00-a4249b7fd222-chunk-0001",
+    "claim_text": "この資料は、テスト用のサンプルである。",
+    "expected_verdict": "supported",
+    "reason": "Chunk 0と1に『テスト』『サンプル』という記述があり、主張を明確に支持するため。"
+  },
+  {
+    "chunk_id": "86e3e0d8-2d58-473c-ba00-a4249b7fd222-chunk-0001",
+    "claim_text": "この歯ブラシの製造元はPublic shintaroである。",
+    "expected_verdict": "not_enough_info",
+    "reason": "スライド内に『Public shintaro』という文字列はあるが、それが歯ブラシの製造元であることを示す情報はないため。"
+  }
+]

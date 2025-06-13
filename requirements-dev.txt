@@ -1,4 +1,16 @@
-exparso>=0.0.2
-pytest>=8.0
-pre-commit>=3.7.0
-requests>=2.28.1
+# Test
+pytest
+pytest-cov
+pytest-mock
+requests
+
+# Linter & Formatter
+ruff
+mypy
+black
+
+# For Notebooks & Data Analysis
+jupyterlab
+pandas
+matplotlib
+scikit-learn

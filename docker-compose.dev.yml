@@ -23,7 +23,7 @@ services:
       dockerfile: backend/extraction_service/Dockerfile # Dockerfileの場所を明記
     container_name: extraction_service
     ports:
-      - "8080:8080"
+      - "8000:8000"
     environment:
       - AWS_REGION=${AWS_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
