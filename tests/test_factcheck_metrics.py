@@ -9,7 +9,7 @@ import requests  # FastAPIサーバーへのHTTPリクエストにのみ依存
 # --- 定数設定 ---
 GROUND_TRUTH_DIR = Path(__file__).parent.parent / "data" / "ground_truth"
 # テスト対象のFastAPIサーバーのURL
-API_BASE_URL = "http://extraction:8000"
+API_BASE_URL = "http://localhost:8000"
 # /embedで取得したテストしたいdocument_id
 # 実際のテスト実行時には、ご自身のIDに書き換えてください
 TEST_DOCUMENT_ID = "86e3e0d8-2d58-473c-ba00-a4249b7fd222"
