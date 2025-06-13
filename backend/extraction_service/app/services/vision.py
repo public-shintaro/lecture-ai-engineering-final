@@ -5,10 +5,10 @@ import os
 from pathlib import Path
 
 import boto3
+import jinja2
 from fastapi import HTTPException
-from jinja2 import Environment, FileSystemLoader
-
-from app.models import VisionAnalysisResult
+from jinja2 import Environment
+from models import VisionAnalysisResult
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,13 @@ BEDROCK_MODEL_ID = os.getenv("BEDROCK_VISION_MODEL_ID", "us.amazon.nova-lite-v1:
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 bedrock_client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
 
-template_dir = Path(__file__).parent.parent.parent / "templates"
-env = Environment(loader=FileSystemLoader(template_dir))
+# このファイル(/app/services/vision.py)の絶対パスを取得
+current_file_path = Path(__file__).resolve()
+# /app/services -> /app -> そこにあるtemplatesディレクトリを探す
+templates_dir = current_file_path.parent.parent / "templates"
+
+template_loader = jinja2.FileSystemLoader(searchpath=str(templates_dir))
+env = Environment(loader=template_loader)
 vision_template = env.get_template("vision_prompt.jinja")
 
 

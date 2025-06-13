@@ -96,4 +96,4 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **7/4 金** | コスト最適 | Auto-pause OpenSearch PoC │ GPU Auto-scale Lambda | 料金レポート |
 | **7/5 土** | 仕上げ | README/​docs 更新 │ Demo 追撮 │ バグ修正 | Stretch docs |
 | **7/6 日** | **Stretch 提出** | 最終デモ動画（OSS 比較含む）│ レポート追補 | Stretch 提出一式 |
-| **未定**   | **pptx書き戻し** | `python-pptx`／`unoconv` 検証 │ レポート追補 | pptxの動的修正 |
+| **未定**   | **結果を元にpptxの修正案を考え書き戻すAgent** | `python-pptx`／`unoconv` 検証 │ レポート追補 | pptxの動的修正 |

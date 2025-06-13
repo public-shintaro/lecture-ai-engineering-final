@@ -40,6 +40,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Install LibreOffice (headless)
         run: |
@@ -56,17 +57,24 @@ jobs:
         # --- ここを修正 ---
         run: |
           # サービスが起動するまで少し待機（最長60秒）
-          timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8080/health; do sleep 1; done'
+          timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
 
       - name: Run unit tests
         # ユニットテストはサービス起動に依存しないため、ここではexparsoのテストのみ実行
         run: pytest tests/test_exparso_pptx.py
 
-      - name: Run end-to-end tests
+      - name: Run end-to-end extraction tests
         run: |
-          export EXTRACTION_API_URL="http://localhost:8080"
+          export EXTRACTION_API_URL="http://localhost:8000"
           export MLFLOW_TRACKING_URI="http://localhost:5000"
           pytest tests/extraction_e2e.py
+
+      - name: Run end-to-end factcheck tests
+        run: |
+          export EXTRACTION_API_URL="http://localhost:8000"
+          export MLFLOW_TRACKING_URI="http://localhost:5000"
+          pytest tests/test_factcheck_metrics.py -v -s
+
       - name: Dump logs if failed
         if: failure()
         run: docker compose -f docker-compose.dev.yml logs extraction

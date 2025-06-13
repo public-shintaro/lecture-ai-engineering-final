@@ -4,7 +4,6 @@
 FROM python:3.11-slim
 
 # 1) 必要パッケージのインストール
-#    * libmagic はファイルタイプ判定（exparso 内部）で稀に必要
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libmagic1 \
@@ -25,17 +24,19 @@ WORKDIR /app
 # 3) 依存パッケージをコピーしてインストール
 COPY backend/extraction_service/requirements.txt .
 COPY .env .
-COPY backend/extraction_service/templates /app/templates
-RUN cat requirements.txt
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4) アプリケーションコードをコピー
-COPY backend/extraction_service/app ./app
+# 4) アプリケーションコードとテンプレートをコピー
+#    appディレクトリの「中身」を作業ディレクトリ(/app)にコピー
+COPY backend/extraction_service/app/ ./
+#    ▼▼▼【修正点】templatesディレクトリのCOPY命令を正しく追加 ▼▼▼
+#    templatesディレクトリの中身を作業ディレクトリ(/app)の中にtemplates/としてコピー
+COPY backend/extraction_service/templates/ ./templates/
 
-# 5) ポート設定（FastAPI 既定 8080 として例示）
-EXPOSE 8080
+# 5) ポート設定
+EXPOSE 8000
 
 # 6) コンテナ起動時コマンド
-#    pipでインストールされたコマンドのフルパスを直接指定して、PATH問題を回避
-CMD ["/usr/local/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+#    WORKDIRが/appなので、main.pyを直接指定する
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
