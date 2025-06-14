@@ -90,10 +90,14 @@ jobs:
           timeout 60s bash -c 'until curl -s -o /dev/null http://localhost:8001/docs; do sleep 1; done'
 
       - name: Run unit tests
-        # ユニットテストはサービス起動に依存しないため、ここではexparsoのテストのみ実行
         run: |
+          # uploadテストはE2Eに移動したため、ここからは削除
           pytest tests/test_exparso_pptx.py
-          pytest tests/test_upload.py --anyio-backend=asyncio
+
+      - name: Run end-to-end upload tests
+        env:
+          UPLOAD_API_URL: http://localhost:8001
+        run: pytest tests/test_upload.py
 
       - name: Run end-to-end extraction tests
         run: |

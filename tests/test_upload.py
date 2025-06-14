@@ -1,52 +1,53 @@
-# tests/test_upload.py
-
 import io
+import os
 import uuid
 
-import pytest
-from fastapi import status
-from httpx import ASGITransport, AsyncClient  # ASGITransport をインポート
+import requests  # anyio, httpxの代わりにrequestsを使用
 
-from backend.app.main import app
+# anyioマーカーは不要
+# import pytest
+
+# FastAPIのappオブジェクトは直接インポートしない
+
+# APIサーバーのURLを環境変数から取得
+# CIで設定する（ローカルテストでは手動で設定）
+BASE_URL = os.getenv("UPLOAD_API_URL", "http://localhost:8001")
+API_URL = f"{BASE_URL}/api/upload"
 
 
-@pytest.mark.anyio
-async def test_upload_success():
+def test_upload_success():
     """正常なPPTXファイルをアップロードした場合のテスト"""
     dummy_pptx_content = b"PK\x03\x04" + b"\x00" * 100  # ZIP形式の最小ヘッダー
-    dummy_file = io.BytesIO(dummy_pptx_content)
 
-    # vvv---ここから修正---vvv
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        # ^^^---ここまで修正---^^^
-        response = await client.post(
-            "/api/upload",
-            files={
-                "file": (
-                    "demo.pptx",
-                    dummy_file,
-                    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                )
-            },
+    # requestsで送信するためのファイル形式に整える
+    files = {
+        "file": (
+            "demo.pptx",
+            io.BytesIO(dummy_pptx_content),  # ファイルの内容
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",  # MIMEタイプ
         )
+    }
 
-    assert response.status_code == status.HTTP_201_CREATED
+    response = requests.post(API_URL, files=files)
+
+    assert (
+        response.status_code == 201
+    )  # FastAPIのデフォルトは200だが、コードでは201を返している
     data = response.json()
     assert uuid.UUID(data["slide_id"])
     assert data["filename"] == "demo.pptx"
 
 
-@pytest.mark.anyio
-async def test_upload_reject_non_pptx():
+def test_upload_reject_non_pptx():
     """PPTX以外のファイルをアップロードした場合に正しく拒否されるかのテスト"""
-    # vvv---ここから修正---vvv
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        # ^^^---ここまで修正---^^^
-        response = await client.post(
-            "/api/upload",
-            files={"file": ("bad.txt", b"hello world", "text/plain")},
+    files = {
+        "file": (
+            "bad.txt",
+            b"hello world",  # ファイルの内容
+            "text/plain",  # MIMEタイプ
         )
+    }
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    response = requests.post(API_URL, files=files)
+
+    assert response.status_code == 400

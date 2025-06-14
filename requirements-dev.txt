@@ -2,12 +2,8 @@
 pytest
 pytest-cov
 pytest-mock
-pytest-anyio
 requests
 uvicorn[standard]
-types-aiofiles
-httpx>=0.25.0
-trio
 
 # Linter & Formatter
 ruff
