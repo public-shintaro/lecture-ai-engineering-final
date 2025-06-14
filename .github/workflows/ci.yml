@@ -38,10 +38,25 @@ jobs:
 
       - name: Install dependencies
         run: |
+          echo "--- Debugging file paths ---"
+          echo "Current working directory: $(pwd)"
+          echo "Listing contents of root:"
+          ls -l
+          echo "Listing contents of backend/api/:"
+          ls -l backend/api/
+          echo "--- End of debugging ---"
+
           python -m pip install --upgrade pip
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f backend/api/requirements.txt ]; then pip install -r backend/api/requirements.txt; fi
+
+          echo "Installing from requirements-dev.txt..."
+          pip install -r requirements-dev.txt
+
+          echo "Installing from requirements.txt..."
+          pip install -r requirements.txt
+
+          echo "Installing from backend/api/requirements.txt..."
+          # if文を削除し、直接実行。ファイルがなければここでエラーになる
+          pip install -r backend/api/requirements.txt
 
       - name: Install LibreOffice (headless)
         run: |
