@@ -69,14 +69,21 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **6/12 木** | BE | factcheck Router (Bedrock) │ DynamoDB 統合 | `/api/factcheck` |
 | **6/13 金** | BE | suggest Router (Bedrock) │ APA citation 関数 | `/api/suggest` |
 | **6/14 土** | BE | feedback Router & DB │ LLM-Judge プロンプト (Bedrock) | `/api/feedback` |
-| **6/15 日** | FE | Next.js アップロード UI │ WebSocket 基盤 | アップロード UI |
-| **6/16 月** | FE | スライドサムネイル + ハイライト描画 | ハイライト表示 |
-| **6/17 火** | FE | Q&A / citation パネル │ コピー機能 | 情報パネル |
-| **6/18 水** | FE | フィードバック UI（星 + コメント） | 評価送信可 |
-| **6/19 木** | テスト | PyTest 単体 / 結合 │ CI 緑化 |  |
-| **6/20 金** | **フリー バッファ** | KPI 計測前倒し・遅延調整 |  |
-| **6/21 土** | ドキュメント | README / Runbook │ アーキ図整備 | docs v0.9 |
-| **6/22 日** | **Bedrock MVP 提出** | デモ動画収録・編集 │ 最終レポート仕上げ | MVP 提出一式 |
+| **6/14 (土)** | **BE**     | **Step 8:** `aioboto3` で S3 保存／SQS Publish │ LocalStack で結合テスト  | `/api/upload` が S3 & SQS 動作 |
+| **6/15 (日)** | BE         | 抽出サービスを **S3 + SQS** 対応 (ダウンロード→チャンク化) │ embed\_service 呼び出しモック | 抽出ジョブ完走 & VectorDB upsert   |
+| **6/16 (月)** | BE         | `/api/factcheck` ルーター │ DynamoDB 結合 │ Bedrock 呼び出しモック           | `/api/factcheck` 返却 JSON    |
+| **6/17 (火)** | BE         | `/api/suggest` ルーター │ APA citation Utility                      | `/api/suggest` 完成           |
+| **6/18 (水)** | BE         | `/api/feedback` ルーター │ LLM-Judge プロンプト                          | `/api/feedback` 完成          |
+| **6/19 (木)** | **FE**     | Next.js **Upload UI** │ WebSocket 基盤 │ eslint/prettier 設定       | ファイル送信 UI                   |
+| **6/20 (金)** | FE │ テスト   | スライド **サムネ & ハイライト** 表示 │ PyTest 追加 │ CI 緑化                     | ハイライト描画 + CI ✅              |
+| **6/21 (土)** | FE │ Docs  | Q\&A / citation パネル │ ⭐️Feedback UI（星＋コメント） │ README 強化         | 4 画面 UI そろう<br>docs v0.9    |
+| **6/22 (日)** | **MVP 提出** | デモ動画収録・編集 │ 最終レポート仕上げ                                           | Bedrock MVP 一式              |
+
+### note
+
+- 6 / 19〜21 は FE とテスト/ドキュメントを並行。午前 FE・午後テストのようにブロックを分けると 3 h 枠に収まりやすいです。
+- Bedrock 呼び出しはまず エンドポイント固定・レスポンスモック で UI/パイプラインを完成 → 6 / 20 までに本番呼び出しへ切替え。
+
 
 #### ── Stretch フェーズ：OSS-GPU (ECS) ＋ FR3/FR5 ──
 
