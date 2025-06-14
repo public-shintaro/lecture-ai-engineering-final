@@ -43,7 +43,7 @@ jobs:
           echo "Listing contents of root:"
           ls -l
           echo "Listing contents of backend/api/:"
-          ls -l backend/api/
+          ls -l backend/api/v1/
           echo "--- End of debugging ---"
 
           python -m pip install --upgrade pip
@@ -54,7 +54,7 @@ jobs:
           echo "Installing from requirements.txt..."
           pip install -r requirements.txt
 
-          echo "Installing from backend/api/requirements.txt..."
+          echo "Installing from backend/api/v1/requirements.txt..."
           # if文を削除し、直接実行。ファイルがなければここでエラーになる
           pip install -r backend/api/requirements.txt
 
