@@ -5,7 +5,7 @@ pytest-mock
 requests
 uvicorn[standard]
 types-aiofiles
-httpx
+httpx>=0.25.0
 trio
 
 # Linter & Formatter

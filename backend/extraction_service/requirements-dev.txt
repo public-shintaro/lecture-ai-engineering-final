@@ -1,2 +1,2 @@
-httpx
+httpx>=0.25.0
 trio
