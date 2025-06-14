@@ -5,6 +5,7 @@
   ],
   "service": "develop",
   "workspaceFolder": "/workspaces/lecture-ai-engineering-final",
+  "postCreateCommand": "uv pip install -r requirements-dev.txt && uv pip install -r backend/api/v1/requirements.txt",
   "customizations": {
     "vscode": {
       "settings": {
@@ -28,7 +29,8 @@
         "ms-python.vscode-pylance",
         "charliermarsh.ruff",
         "ms-python.mypy",
-        "GitHub.vscode-pull-request-github"
+        "GitHub.vscode-pull-request-github",
+        "google.geminicodeassist"
       ]
     }
   },

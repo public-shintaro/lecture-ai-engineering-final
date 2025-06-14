@@ -3,6 +3,8 @@ pytest
 pytest-cov
 pytest-mock
 requests
+uvicorn[standard]
+types-aiofiles
 
 # Linter & Formatter
 ruff

@@ -41,6 +41,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f backend/api/requirements.txt ]; then pip install -r backend/api/requirements.txt; fi
 
       - name: Install LibreOffice (headless)
         run: |
@@ -59,9 +60,24 @@ jobs:
           # サービスが起動するまで少し待機（最長60秒）
           timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
 
+      - name: Start additional API server in background
+        run: |
+          uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 &
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for extraction_service (port 8000)..."
+          timeout 60s bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
+
+          echo "Waiting for new API server (port 8001)..."
+          # FastAPIが自動生成する/docsエンドポイントにアクセスして起動を確認
+          timeout 60s bash -c 'until curl -s -o /dev/null http://localhost:8001/docs; do sleep 1; done'
+
       - name: Run unit tests
         # ユニットテストはサービス起動に依存しないため、ここではexparsoのテストのみ実行
-        run: pytest tests/test_exparso_pptx.py
+        run: |
+          pytest tests/test_exparso_pptx.py
+          pytest tests/test_upload.py
 
       - name: Run end-to-end extraction tests
         run: |

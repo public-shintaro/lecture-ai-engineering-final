@@ -20,4 +20,6 @@ repos:
     -   id: mypy
         # exparsoに型ヒントがないため、一時的にmissing-importsを無視します
         args: [--ignore-missing-imports]
-        additional_dependencies: [types-requests]
+        additional_dependencies:
+        -   types-requests
+        -   types-aiofiles
