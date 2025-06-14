@@ -2,6 +2,7 @@
 pytest
 pytest-cov
 pytest-mock
+pytest-anyio
 requests
 uvicorn[standard]
 types-aiofiles
