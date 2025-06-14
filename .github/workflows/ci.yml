@@ -94,4 +94,8 @@ jobs:
 
       - name: Dump logs if failed
         if: failure()
-        run: docker compose -f docker-compose.dev.yml logs extraction
+        run: |
+          echo "--- Docker Compose Logs ---"
+          docker compose -f docker-compose.dev.yml logs extraction
+          echo "--- Uvicorn API Server Logs ---"
+          cat uvicorn.log || echo "uvicorn.log not found."
