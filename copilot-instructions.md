@@ -66,7 +66,7 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **6/9 月** | アルゴ | RAG ファクトチェック関数 │ Precision/Recall notebook | 不整合 JSON |
 | **6/10 火** | 画像 | （6/7 で完了済につきタスク軽減） | — |
 | **6/11 水** | BE | FastAPI スケルトン │ `/api/upload` | Upload 動作 |
-| **6/12 木** | BE | factcheck Router (Bedrock) │ OpenSearch 統合 | `/api/factcheck` |
+| **6/12 木** | BE | factcheck Router (Bedrock) │ DynamoDB 統合 | `/api/factcheck` |
 | **6/13 金** | BE | suggest Router (Bedrock) │ APA citation 関数 | `/api/suggest` |
 | **6/14 土** | BE | feedback Router & DB │ LLM-Judge プロンプト (Bedrock) | `/api/feedback` |
 | **6/15 日** | FE | Next.js アップロード UI │ WebSocket 基盤 | アップロード UI |

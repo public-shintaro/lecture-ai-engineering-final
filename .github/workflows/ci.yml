@@ -62,7 +62,8 @@ jobs:
 
       - name: Start additional API server in background
         run: |
-          uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 &
+          # nohupと出力リダイレクトを使い、プロセスを完全に切り離してログを記録
+          nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 > uvicorn.log 2>&1 &
 
       - name: Wait for services to be ready
         run: |
