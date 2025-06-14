@@ -5,6 +5,8 @@ pytest-mock
 requests
 uvicorn[standard]
 types-aiofiles
+httpx
+trio
 
 # Linter & Formatter
 ruff
