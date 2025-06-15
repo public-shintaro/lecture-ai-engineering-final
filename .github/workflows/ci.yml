@@ -70,7 +70,8 @@ jobs:
       #   run: pre-commit run --all-files
 
       - name: Wait for services to be ready
-        # --- ここを修正 ---
+        env:
+          AWS_ENDPOINT_URL: http://localhost:4566
         run: |
           # サービスが起動するまで少し待機（最長60秒）
           timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
