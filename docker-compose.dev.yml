@@ -55,6 +55,19 @@ services:
     networks:
       - backend-net
 
+# 3) LocalStack  ──────────────────────────────
+  localstack:
+    image: localstack/localstack:3.5
+    ports:
+      - "4566:4566"      # LocalStackのEdge port
+    environment:
+      - SERVICES=s3,sqs
+      - LS_LOG=info
+    volumes:
+      - "./.localstack:/var/lib/localstack" # データを永続化
+    networks:
+      - backend-net
+
 networks:
   backend-net:
     driver: bridge

@@ -41,6 +41,7 @@ ENV/
 .env.development.local
 .env.test.local
 .env.production.local
+.localstack/
 
 # Dependencies
 node_modules/

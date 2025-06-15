@@ -70,16 +70,39 @@ jobs:
       #   run: pre-commit run --all-files
 
       - name: Wait for services to be ready
-        # --- ここを修正 ---
+        env:
+          AWS_ENDPOINT_URL: http://localhost:4566
         run: |
           # サービスが起動するまで少し待機（最長60秒）
           timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
 
       - name: Start additional API server in background
         run: |
-          # nohupと出力リダイレクトを使い、プロセスを完全に切り離してログを記録
-          nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 > uvicorn.log 2>&1 &
+          # CI環境専用の.envファイルを作成する
+          cat <<EOF > .env.ci
+          AWS_ENDPOINT_URL=http://localhost:4566
+          AWS_REGION=us-east-1
+          AWS_ACCESS_KEY_ID=test
+          AWS_SECRET_ACCESS_KEY=test
+          UPLOAD_BUCKET=slides-upload-dev
+          EXTRACT_QUEUE_URL=http://localhost:4566/000000000000/slide-extract-queue
+          EOF
+          
+          # uvicornに--env-fileオプションを渡し、作成した設定ファイルを直接読み込ませる
+          nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --env-file ./.env.ci > uvicorn.log 2>&1 &
 
+      - name: Init LocalStack resources
+        run: |
+          # awscli-localをインストール
+          pip install awscli-local
+          
+          # LocalStackの準備が整うまで少し待つ
+          echo "Waiting for LocalStack service to be fully available..."
+          sleep 10
+          
+          # 正しいエンドポイントを指定して初期化スクリプトを実行
+          AWS_ENDPOINT_URL=http://localhost:4566 sh ./scripts/init_localstack.sh
+          
       - name: Wait for services to be ready
         run: |
           echo "Waiting for extraction_service (port 8000)..."
@@ -97,6 +120,7 @@ jobs:
       - name: Run end-to-end upload tests
         env:
           UPLOAD_API_URL: http://localhost:8001
+          AWS_ENDPOINT_URL: http://localhost:4566
         run: pytest tests/test_upload.py
 
       - name: Run end-to-end extraction tests
