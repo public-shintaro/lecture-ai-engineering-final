@@ -91,6 +91,18 @@ jobs:
           # uvicornに--env-fileオプションを渡し、作成した設定ファイルを直接読み込ませる
           nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --env-file ./.env.ci > uvicorn.log 2>&1 &
 
+      - name: Init LocalStack resources
+        run: |
+          # awscli-localをインストール
+          pip install awscli-local
+          
+          # LocalStackの準備が整うまで少し待つ
+          echo "Waiting for LocalStack service to be fully available..."
+          sleep 10
+          
+          # 正しいエンドポイントを指定して初期化スクリプトを実行
+          AWS_ENDPOINT_URL=http://localhost:4566 sh ./scripts/init_localstack.sh
+          
       - name: Wait for services to be ready
         run: |
           echo "Waiting for extraction_service (port 8000)..."
