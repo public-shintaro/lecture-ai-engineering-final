@@ -4,6 +4,11 @@ pytest-cov
 pytest-mock
 requests
 uvicorn[standard]
+python-dotenv
+boto3
+
+# Development Tools
+awscli-local
 
 # Linter & Formatter
 ruff

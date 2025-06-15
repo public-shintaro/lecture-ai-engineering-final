@@ -97,6 +97,7 @@ jobs:
       - name: Run end-to-end upload tests
         env:
           UPLOAD_API_URL: http://localhost:8001
+          AWS_ENDPOINT_URL: http://localhost:4566
         run: pytest tests/test_upload.py
 
       - name: Run end-to-end extraction tests
