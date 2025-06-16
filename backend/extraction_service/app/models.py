@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class Chunk(BaseModel):
-    document_id: str
+    slide_id: str
     chunk_id: str
     text: str
     metadata: dict

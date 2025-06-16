@@ -17,13 +17,22 @@ jobs:
 
       - name: Create .env file for CI
         run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > .env
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-          echo "AWS_SESSION_TOKEN=${{ secrets.AWS_SESSION_TOKEN }}" >> .env
-          echo "AWS_REGION=us-east-1" >> .env
-          echo "DDB_TABLE=SlideVectors" >> .env
-          echo "MLFLOW_TRACKING_URI=http://mlflow:5000" >> .env
+          cat <<'EOF' > .env        # ← heredoc の方が楽
+          AWS_REGION=us-east-1
+          AWS_ACCESS_KEY_ID=dummy   # LocalStack 用なのでダミーで OK
+          AWS_SECRET_ACCESS_KEY=dummy
 
+          # ---- LocalStack 初期化に必須 ----
+          AWS_ENDPOINT_URL=http://localstack:4566
+          UPLOAD_BUCKET=slides-upload-dev
+          EXTRACT_QUEUE_NAME=slide-extract-queue
+          EXTRACT_QUEUE_URL=http://localstack:4566/000000000000/slide-extract-queue
+          VECTOR_TABLE_NAME=lecture-vector-store-dev
+
+          # ---- アプリ固有 ----
+          USE_DUMMY_EMBED=true      # Bedrock 呼び出しをスタブに
+          MLFLOW_TRACKING_URI=http://mlflow:5000
+          EOF
       - name: Start services with Docker Compose
         # --- ここを修正 ---
         run: docker compose -f docker-compose.dev.yml up --build -d
@@ -87,7 +96,7 @@ jobs:
           UPLOAD_BUCKET=slides-upload-dev
           EXTRACT_QUEUE_URL=http://localhost:4566/000000000000/slide-extract-queue
           EOF
-          
+
           # uvicornに--env-fileオプションを渡し、作成した設定ファイルを直接読み込ませる
           nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --env-file ./.env.ci > uvicorn.log 2>&1 &
 
@@ -95,14 +104,14 @@ jobs:
         run: |
           # awscli-localをインストール
           pip install awscli-local
-          
+
           # LocalStackの準備が整うまで少し待つ
           echo "Waiting for LocalStack service to be fully available..."
           sleep 10
-          
+
           # 正しいエンドポイントを指定して初期化スクリプトを実行
           AWS_ENDPOINT_URL=http://localhost:4566 sh ./scripts/init_localstack.sh
-          
+
       - name: Wait for services to be ready
         run: |
           echo "Waiting for extraction_service (port 8000)..."

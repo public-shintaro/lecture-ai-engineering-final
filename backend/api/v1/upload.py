@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from uuid import uuid4
@@ -57,25 +58,23 @@ async def _send_extract_message(slide_id: str, s3_key: str) -> None:
         return
 
     session = aioboto3.Session()
-    # vvv---ここを修正---vvv
     async with session.client(
         "sqs", endpoint_url=AWS_ENDPOINT_URL, region_name=AWS_REGION
     ) as sqs:
-        # ^^^---ここまで修正---^^^
         await sqs.send_message(
             QueueUrl=QUEUE_URL,
-            MessageBody="extract",
-            MessageAttributes={
-                "slide_id": {"StringValue": slide_id, "DataType": "String"},
-                "bucket": {"StringValue": BUCKET, "DataType": "String"},
-                "s3_key": {"StringValue": s3_key, "DataType": "String"},
-            },
+            MessageBody=json.dumps(
+                {  # ここだけ変更
+                    "slide_id": slide_id,
+                    "s3_key": s3_key,
+                }
+            ),
         )
 
 
 # --- ルーター ---
 @router.post(
-    "/upload",
+    "/v1/upload",
     response_model=UploadResponse,
     status_code=status.HTTP_201_CREATED,
 )

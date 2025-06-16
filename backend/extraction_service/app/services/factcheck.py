@@ -7,8 +7,8 @@ from pathlib import Path  # <- pathlibをインポート
 
 import boto3
 import jinja2
-from models import Inconsistency
-from services.vector_store import VectorStore  # ① インポートパスを修正
+from app.dependencies import get_vector_store
+from app.models import Inconsistency
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ロギング設定
@@ -25,7 +25,7 @@ TOP_K_EVIDENCE = 5
 # pathlibを使って、このファイル自身の絶対パスを取得
 try:
     current_file_path = Path(__file__).resolve()
-    templates_dir = current_file_path.parent.parent / "templates"
+    templates_dir = current_file_path.parent.parent.parent / "templates"
     template_loader = jinja2.FileSystemLoader(searchpath=str(templates_dir))
     env = jinja2.Environment(loader=template_loader)
     PROMPT_TEMPLATE = env.get_template("factcheck_prompt.jinja")
@@ -39,7 +39,7 @@ vector_store = None
 try:
     if PROMPT_TEMPLATE:
         bedrock_runtime = boto3.client("bedrock-runtime", region_name=AWS_REGION)
-        vector_store = VectorStore()
+        vector_store = get_vector_store()
 except Exception as e:
     logger.critical(
         f"Failed to initialize AWS clients or VectorStore: {e}", exc_info=True

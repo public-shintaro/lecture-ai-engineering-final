@@ -3,8 +3,10 @@ import logging
 import os
 
 import boto3
+import numpy as np
 
 logger = logging.getLogger(__name__)
+USE_DUMMY_EMBED = os.getenv("USE_DUMMY_EMBED", "true").lower() == "true"
 
 # --- 定数とクライアントをモジュールレベルで初期化 ---
 MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.titan-embed-text-v2:0")
@@ -24,6 +26,10 @@ def generate_embedding(text: str) -> list[float] | None:
     """
     単一のテキストからベクトル埋め込みを生成する。
     """
+    if USE_DUMMY_EMBED:
+        # 固定長 384 の乱数ベクトル（再現性を持たせるなら hash → RNG seed）
+        rng = np.random.default_rng(abs(hash(text)) % 2**32)
+        return rng.random(384).tolist()
     if not BEDROCK_RUNTIME:
         logger.error("Bedrock client is not available. Cannot generate embedding.")
         return None

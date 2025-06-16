@@ -1,8 +1,8 @@
 import logging
 
+from app.models import Inconsistency
+from app.services.factcheck import factcheck_slide
 from fastapi import APIRouter, HTTPException
-from models import Inconsistency
-from services.factcheck import factcheck_slide
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/factcheck", tags=["Fact-Checking"])

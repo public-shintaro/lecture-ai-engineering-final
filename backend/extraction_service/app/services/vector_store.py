@@ -1,77 +1,77 @@
 import logging
-import os
 from decimal import Decimal
 from typing import TYPE_CHECKING, List
 
-import boto3
+# boto3.dynamodb.conditions は非同期でも共通で利用可能
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
-# ▼▼▼ TYPE_CHECKINGブロックを追加 ▼▼▼
-# 型ヒントのためだけにインポートし、実行時にはインポートしないようにする
+# 型ヒントのためだけにインポート
 if TYPE_CHECKING:
-    from models import Chunk
+    from app.models import Chunk
 
 logger = logging.getLogger(__name__)
 
 
 class VectorStore:
     """
-    DynamoDBと連携し、ベクトルデータの永続化を管理するクラス。
+    DynamoDBと非同期に連携し、ベクトルデータの永続化を管理するクラス。
     """
 
-    def __init__(self, table_name: str | None = None, region_name: str | None = None):
-        # ... (この部分のコードは変更なし) ...
-        try:
-            self.region_name = region_name or os.environ.get("AWS_REGION", "us-east-1")
-            self.table_name = table_name or os.environ.get(
-                "DDB_TABLE_NAME", "SlideChunks"
-            )
-            if not self.table_name:
-                raise ValueError("DynamoDB table name is not configured.")
-            dynamodb = boto3.resource("dynamodb", region_name=self.region_name)
-            self.table = dynamodb.Table(self.table_name)
-            self.table.load()
-            logger.info(
-                f"Successfully connected to DynamoDB table: '{self.table_name}'"
-            )
-        except ClientError as e:
-            logger.exception(
-                f"Failed to connect to DynamoDB table '{self.table_name}': {e}"
-            )
-            raise
+    def __init__(self, table):
+        """
+        コンストラクタ。boto3リソースを直接作成するのではなく、
+        外部から非同期のaioboto3テーブルリソースを受け取るように変更。
 
-    # ▼▼▼ 型ヒントを文字列（Forward Reference）に変更 ▼▼▼
-    def add_chunk(self, chunk: "Chunk"):
+        Args:
+            table: aioboto3で初期化されたDynamoDB.Tableリソース
         """
-        単一のChunkオブジェクトをDynamoDBテーブルに追加する。
+        if table is None:
+            raise ValueError("aioboto3 DynamoDB.Table resource cannot be None.")
+        self.table = table
+        logger.info(f"VectorStore initialized with table: '{self.table.name}'")
+
+    async def add_chunk(self, chunk: "Chunk"):
+        """
+        単一のChunkオブジェクトをDynamoDBテーブルに非同期で追加する。
         """
         try:
+            # Pydanticモデルを辞書に変換
             item = chunk.model_dump()
+
             # embeddingのリストが存在する場合、中のfloatをすべてDecimalに変換する
+            # DynamoDBはfloatを直接サポートしないため、この変換は必須
             if item.get("embedding"):
                 item["embedding"] = [Decimal(str(x)) for x in item["embedding"]]
-            self.table.put_item(Item=item)
-            logger.info(
-                f"Successfully put chunk to DynamoDB: {chunk.document_id} / {chunk.chunk_id}"
+
+            # テーブルへの書き込みを非同期で実行
+            await self.table.put_item(Item=item)
+
+            logger.debug(
+                f"Successfully put chunk to DynamoDB: {chunk.slide_id} / {chunk.chunk_id}"
             )
         except ClientError as e:
             logger.exception(f"Failed to put chunk {chunk.chunk_id} to DynamoDB: {e}")
             raise
 
-    # ▼▼▼ 型ヒントを文字列（Forward Reference）に変更し、メソッド内でインポート ▼▼▼
-    def get_chunks_by_document_id(self, document_id: str) -> List["Chunk"]:
+    async def get_chunks_by_document_id(self, document_id: str) -> List["Chunk"]:
         """
-        指定されたdocument_idに一致するすべてのチャンクをDynamoDBから取得する。
+        指定されたdocument_idに一致するすべてのチャンクを非同期でDynamoDBから取得する。
         """
-        # ▼▼▼ 実際に必要になったここでインポートする！ ▼▼▼
-        from models import Chunk  # noqa: E402
+        from app.models import Chunk
 
         try:
-            response = self.table.query(
+            # テーブルへのクエリを非同期で実行
+            response = await self.table.query(
                 KeyConditionExpression=Key("document_id").eq(document_id)
             )
             items = response.get("Items", [])
+
+            # DynamoDBから取得したDecimalをfloatに戻してからモデルを初期化する
+            for item in items:
+                if "embedding" in item and item["embedding"] is not None:
+                    item["embedding"] = [float(x) for x in item["embedding"]]
+
             return [Chunk(**item) for item in items]
         except ClientError as e:
             logger.exception(

@@ -6,7 +6,9 @@ pillow
 python-multipart
 boto3
 python-dotenv
-numpy
+numpy==1.26.4        # Python 3.11 対応 wheel あり
+aioboto3==12.4.0     # 追加したパッケージ
 jinja2
 pydantic
 scikit-learn
+

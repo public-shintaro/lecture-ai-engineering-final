@@ -2,12 +2,12 @@ import logging
 import uuid
 
 # main.pyで初期化されたvector_storeインスタンスをインポートして利用
-from dependencies import vector_store
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
+from app.dependencies import vector_store
 
 # Chunkモデルをインポート
-from models import Chunk
-from services import embedding, parser
+from app.models import Chunk
+from app.services import embedding, parser
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/document", tags=["Document Processing"])
@@ -34,7 +34,7 @@ def process_and_store_document(file_content: bytes, document_id: str, filename: 
 
             # Chunkオブジェクトを作成
             chunk = Chunk(
-                document_id=document_id,
+                slide_id=document_id,
                 chunk_id=chunk_id,
                 text=text,
                 metadata={},  # メタデータは空で初期化
