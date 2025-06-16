@@ -12,7 +12,6 @@ from app.models import Chunk  # Chunkモデルをインポート
 from app.services.embedding import generate_embedding
 from app.services.parser import parse_pptx_to_texts
 from app.services.vector_store import VectorStore
-from botocore.exceptions import ClientError
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -37,98 +36,77 @@ async def create_boto_clients():
         yield sqs, s3, dynamodb
 
 
-async def handle_message(message: dict, s3_client, vector_store: VectorStore):
-    receipt_handle = message["ReceiptHandle"]
+async def handle_message(msg: dict, s3_client, vector_store: VectorStore):
+    receipt = msg["ReceiptHandle"]
+
+    # ① Body をパース
     try:
-        # 修正点: S3イベント通知のJSONを正しくパースする
-        logging.info(f"Received message body: {message['Body']}")
-        body = json.loads(message["Body"])
-        # S3イベント通知ではない、予期せぬメッセージはスキップ
-        if "Records" not in body:
-            logging.warning("Message is not a valid S3 event notification, skipping.")
-            return receipt_handle, True  # 処理対象外なのでキューから削除
+        body = json.loads(msg["Body"])
+        slide_id = body["slide_id"]
+        s3_key = body["s3_key"]
+    except (json.JSONDecodeError, KeyError):
+        logging.warning("Unexpected message format, skipping: %s", msg["Body"])
+        return receipt, True  # ⇒ Delete して終了
 
-        s3_key = body["Records"][0]["s3"]["object"]["key"]
-        logging.info(f"Processing S3 object: {s3_key}")
+    # ② S3 → 一時ファイル DL
+    with tempfile.NamedTemporaryFile() as tf:
+        await s3_client.download_fileobj(UPLOAD_BUCKET, s3_key, tf)
+        tf.seek(0)
+        slide_texts = parse_pptx_to_texts(tf.read())  # bytes で渡す版に合わせる
 
-        with tempfile.NamedTemporaryFile() as tf:
-            await s3_client.download_fileobj(UPLOAD_BUCKET, s3_key, tf)
-            tf.seek(0)
-
-            # チャンク化の際にslide_idとしてファイル名（拡張子なし）を使用
-            slide_id = os.path.splitext(os.path.basename(s3_key))[0]
-            slide_texts = parse_pptx_to_texts(tf.name)  # parser関数を修正
-
-            chunks = []
-            for i, text in enumerate(slide_texts):
-                chunk_id = f"{slide_id}-chunk-{i:04d}"
-                chunks.append(
-                    Chunk(
-                        slide_id=slide_id,
-                        chunk_id=chunk_id,
-                        text=text,
-                        page_number=i + 1,
-                        embedding=None,
-                    )
-                )
-
-        logging.info(f"Extracted {len(chunks)} chunks from {s3_key}")
-
-        for chunk in chunks:
-            embedding = generate_embedding(chunk.text)
-            if embedding is None:
-                logging.warning(
-                    f"Failed to generate embedding for chunk: {chunk.chunk_id}. Skipping."
-                )
-                continue
-
-            chunk.embedding = embedding
-            await vector_store.add_chunk(chunk)
-
-        logging.info(f"Successfully processed and stored all chunks for {s3_key}")
-        return receipt_handle, True
-
-    except json.JSONDecodeError:
-        logging.warning(
-            f"Received a non-JSON message, deleting from queue: {message['Body']}"
+    # ③ Chunk を作成 & 埋め込み & VectorStore に追加
+    logging.info("Extracted %d chunks from %s", len(slide_texts), s3_key)
+    for idx, text in enumerate(slide_texts):
+        chunk = Chunk(
+            slide_id=slide_id,
+            chunk_id=f"{slide_id}-chunk-{idx:04d}",
+            text=text,
+            embedding=None,
+            metadata={},
         )
-        return receipt_handle, True  # JSONでないメッセージは処理できないので削除
-    except Exception as e:
-        logging.error(f"Failed to process message. Error: {e}", exc_info=True)
-        return receipt_handle, False
+
+        emb = generate_embedding(text)
+        if emb is None:
+            logging.warning("embedding failed: %s", chunk.chunk_id)
+        else:
+            chunk.embedding = emb
+        await vector_store.add_chunk(chunk)  # ← add_chunk は既存メソッド
+
+    logging.info("✔ upsert slide_id=%s chunks=%d", slide_id, len(slide_texts))
+    return receipt, True  # 成功したので Delete
 
 
+# --- ループ部の細かな修正だけ ---
 async def main():
-    logging.info("Starting SQS consumer...")
+    logging.info("Starting SQS consumer…")
     async with create_boto_clients() as (sqs, s3, dynamodb):
+        # aioboto3.resource/Table() は await 不要
         table = await dynamodb.Table(VECTOR_TABLE_NAME)
         vector_store = VectorStore(table)
 
         while True:
-            try:
-                response = await sqs.receive_message(
-                    QueueUrl=EXTRACT_QUEUE_URL,
-                    MaxNumberOfMessages=5,
-                    WaitTimeSeconds=20,
-                    VisibilityTimeout=120,
-                )
-                messages = response.get("Messages", [])
-                if not messages:
-                    continue
+            resp = await sqs.receive_message(
+                QueueUrl=EXTRACT_QUEUE_URL,
+                MaxNumberOfMessages=5,
+                WaitTimeSeconds=20,
+                VisibilityTimeout=120,
+            )
+            msgs = resp.get("Messages", [])
+            if not msgs:
+                continue
 
-                tasks = [handle_message(msg, s3, vector_store) for msg in messages]
-                results = await asyncio.gather(*tasks)
+            results = await asyncio.gather(
+                *[handle_message(m, s3, vector_store) for m in msgs]
+            )
 
-                for receipt_handle, success in results:
-                    if success:
-                        await sqs.delete_message(
-                            QueueUrl=EXTRACT_QUEUE_URL, ReceiptHandle=receipt_handle
-                        )
+            for receipt, ok in results:
+                if ok:
+                    await sqs.delete_message(
+                        QueueUrl=EXTRACT_QUEUE_URL, ReceiptHandle=receipt
+                    )
 
-            except ClientError as e:
-                logging.error(f"SQS client error: {e}")
-                await asyncio.sleep(10)
 
+# --------------------------------------------------------------------
 
 if __name__ == "__main__":
     asyncio.run(main())

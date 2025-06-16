@@ -58,7 +58,7 @@ class VectorStore:
         """
         指定されたdocument_idに一致するすべてのチャンクを非同期でDynamoDBから取得する。
         """
-        from .models import Chunk
+        from app.models import Chunk
 
         try:
             # テーブルへのクエリを非同期で実行

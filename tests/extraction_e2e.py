@@ -14,7 +14,7 @@ UPLOAD_API_URL = (
 
 # --- LocalStack Configuration ---
 LOCALSTACK_ENDPOINT_URL = "http://localstack:4566"
-AWS_REGION = "ap-northeast-1"
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 VECTOR_TABLE_NAME = os.environ.get("VECTOR_TABLE_NAME", "lecture-vector-store-dev")
 
 

@@ -34,7 +34,7 @@ def process_and_store_document(file_content: bytes, document_id: str, filename: 
 
             # Chunkオブジェクトを作成
             chunk = Chunk(
-                document_id=document_id,
+                slide_id=document_id,
                 chunk_id=chunk_id,
                 text=text,
                 metadata={},  # メタデータは空で初期化
