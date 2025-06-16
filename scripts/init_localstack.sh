@@ -4,7 +4,7 @@
 set -e
 
 # LocalStackのエンドポイントURL
-ENDPOINT_URL=http://localstack:4566
+ENDPOINT_URL=${AWS_ENDPOINT_URL:-http://localhost:4566}
 
 echo "Waiting for LocalStack to be ready..."
 # LocalStackが起動するまで最大30秒待機
