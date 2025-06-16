@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 
 # 型ヒントのためだけにインポート
 if TYPE_CHECKING:
-    from .models import Chunk  # 相対インポートに変更
+    from app.models import Chunk
 
 logger = logging.getLogger(__name__)
 

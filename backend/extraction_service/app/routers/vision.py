@@ -1,10 +1,10 @@
 import logging
 
-from fastapi import APIRouter, File, UploadFile
-from models import VisionAnalysisResult
+from app.models import VisionAnalysisResult
 
 # 修正: 呼び出す関数名を変更
-from services.vision import analyze_image_with_model
+from app.services.vision import analyze_image_with_model
+from fastapi import APIRouter, File, UploadFile
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

@@ -3,13 +3,11 @@ import os
 from typing import TYPE_CHECKING
 
 import boto3
+from app.services.vector_store import VectorStore
 from botocore.exceptions import ClientError
 
-# 修正点: 絶対パスでVectorStoreをインポートする
-from backend.extraction_service.app.services.vector_store import VectorStore
-
 if TYPE_CHECKING:
-    from backend.extraction_service.app.services.vector_store import VectorStore
+    from app.services.vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
 

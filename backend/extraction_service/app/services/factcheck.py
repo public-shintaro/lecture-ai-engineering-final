@@ -7,8 +7,8 @@ from pathlib import Path  # <- pathlibをインポート
 
 import boto3
 import jinja2
-from dependencies import get_vector_store
-from models import Inconsistency
+from app.dependencies import get_vector_store
+from app.models import Inconsistency
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ロギング設定
@@ -25,7 +25,7 @@ TOP_K_EVIDENCE = 5
 # pathlibを使って、このファイル自身の絶対パスを取得
 try:
     current_file_path = Path(__file__).resolve()
-    templates_dir = current_file_path.parent.parent / "templates"
+    templates_dir = current_file_path.parent.parent.parent / "templates"
     template_loader = jinja2.FileSystemLoader(searchpath=str(templates_dir))
     env = jinja2.Environment(loader=template_loader)
     PROMPT_TEMPLATE = env.get_template("factcheck_prompt.jinja")

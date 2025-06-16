@@ -6,13 +6,13 @@ import tempfile
 from contextlib import asynccontextmanager
 
 import aioboto3
+from app.models import Chunk  # Chunkモデルをインポート
 
 # 修正点: .servicesからではなく、 servicesから直接インポート
 from app.services.embedding import generate_embedding
 from app.services.parser import parse_pptx_to_texts
 from app.services.vector_store import VectorStore
 from botocore.exceptions import ClientError
-from models import Chunk  # Chunkモデルをインポート
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
