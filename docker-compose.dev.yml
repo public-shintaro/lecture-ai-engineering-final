@@ -15,31 +15,69 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - backend-net
-
-  # 1) 抽出サービス  ────────────────────────────
-  extraction:
+  # 1) アップロードサービス  ─────────────────
+  upload_service:
     build:
-      context: .  # ビルドコンテキストをプロジェクトルートに設定
-      dockerfile: backend/extraction_service/Dockerfile # Dockerfileの場所を明記
-    container_name: extraction_service
+      # ビルドの基準点をプロジェクトルートに設定
+      context: .
+      dockerfile: backend/upload_service/Dockerfile
+    container_name: upload_service
+    # 実行コマンドを修正
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
-      - "8000:8000"
+      - "8081:8000"
+    volumes:
+      # 開発中のコード変更をリアルタイムで反映させるため、backend全体をマウント
+      - ./backend:/app
+    depends_on:
+      - localstack
+    networks:
+      - backend-net
     environment:
+      # 必要な環境変数をコンテナに渡す
       - AWS_REGION=${AWS_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} # AWS SSO等の一時的な認証情報を使っている場合
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - UPLOAD_BUCKET=${UPLOAD_BUCKET}
+      - EXTRACT_QUEUE_URL=${EXTRACT_QUEUE_URL}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+
+  # 2) 抽出サービス  ────────────────────────────
+  extraction:
+    build:
+      # 基準点をextraction_service自身のディレクトリに変更
+      context: ./backend/extraction_service
+      dockerfile: Dockerfile
+    container_name: extraction_service
+    # start.shは/appにコピーされるので、パスを修正
+    command: sh /app/start.sh
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
       - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
       - AWS_PAGER=""
+      - UPLOAD_BUCKET=${UPLOAD_BUCKET}
+      - EXTRACT_QUEUE_URL=${EXTRACT_QUEUE_URL}
+      - VECTOR_TABLE_NAME=${VECTOR_TABLE_NAME}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
     volumes:
-      - ./slides:/data
-
+      # 開発中のコード変更を反映させるため、ディレクトリ全体をマウント
+      - ./backend/extraction_service:/app
     depends_on:
-      - mlflow
+      init-localstack:
+        condition: service_completed_successfully
+      mlflow:
+        condition: service_started
     networks:
       - backend-net
 
-  # 2) MLflow Tracking Server  ─────────────────
+  # 3) MLflow Tracking Server  ─────────────────
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.22.1
     container_name: mlflow_server
@@ -55,16 +93,41 @@ services:
     networks:
       - backend-net
 
-# 3) LocalStack  ──────────────────────────────
+# 4) LocalStack  ──────────────────────────────
   localstack:
     image: localstack/localstack:3.5
+    container_name: localstack_container
     ports:
       - "4566:4566"      # LocalStackのEdge port
     environment:
-      - SERVICES=s3,sqs
+      - SERVICES=s3,sqs,dynamodb
       - LS_LOG=info
     volumes:
       - "./.localstack:/var/lib/localstack" # データを永続化
+      - ./scripts:/etc/localstack/init/ready.d
+    networks:
+      - backend-net
+
+# 5) 初期化用コンテナを追加
+  init-localstack:
+    image: amazon/aws-cli:2.15.19
+    container_name: init_localstack_container
+    entrypoint: [""] # 既存のENTRYPOINT(aws)を無効化
+#    command: ["ls", "-l", "/scripts"]
+    command: ["/bin/sh", "/scripts/init_localstack.sh"] # 実行したいコマンドを明確に指定
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - UPLOAD_BUCKET=${UPLOAD_BUCKET}
+      - EXTRACT_QUEUE_NAME=${EXTRACT_QUEUE_NAME}
+      - VECTOR_TABLE_NAME=${VECTOR_TABLE_NAME}
+    volumes:
+      - ./scripts:/scripts
+    depends_on:
+      localstack:
+        condition: service_healthy # LocalStackのヘルスチェックを待つ
+    restart: "no" # 一度実行したら再起動しない
     networks:
       - backend-net
 

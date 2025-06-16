@@ -75,7 +75,7 @@ async def _send_extract_message(slide_id: str, s3_key: str) -> None:
 
 # --- ルーター ---
 @router.post(
-    "/upload",
+    "/v1/upload",
     response_model=UploadResponse,
     status_code=status.HTTP_201_CREATED,
 )

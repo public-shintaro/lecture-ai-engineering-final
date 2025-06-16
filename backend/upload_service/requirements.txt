@@ -1,0 +1,7 @@
+# backend/upload_service/requirements.txt
+
+fastapi
+uvicorn[standard]
+python-multipart
+boto3
+aioboto3

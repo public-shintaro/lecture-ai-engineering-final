@@ -1,7 +1,6 @@
+from api.v1.upload import router as upload_router
 from dotenv import load_dotenv
 from fastapi import FastAPI
-
-from backend.api.v1.upload import router as upload_router
 
 # アプリケーション起動時に .env ファイルを読み込む
 load_dotenv()

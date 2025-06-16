@@ -7,8 +7,8 @@ from pathlib import Path  # <- pathlibをインポート
 
 import boto3
 import jinja2
+from dependencies import get_vector_store
 from models import Inconsistency
-from services.vector_store import VectorStore  # ① インポートパスを修正
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ロギング設定
@@ -39,7 +39,7 @@ vector_store = None
 try:
     if PROMPT_TEMPLATE:
         bedrock_runtime = boto3.client("bedrock-runtime", region_name=AWS_REGION)
-        vector_store = VectorStore()
+        vector_store = get_vector_store()
 except Exception as e:
     logger.critical(
         f"Failed to initialize AWS clients or VectorStore: {e}", exc_info=True
