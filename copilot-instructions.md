@@ -71,7 +71,7 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **6/14 土** | BE | feedback Router & DB │ LLM-Judge プロンプト (Bedrock) | `/api/feedback` |
 | **6/14 (土)** | **BE**     | **Step 8:** `aioboto3` で S3 保存／SQS Publish │ LocalStack で結合テスト  | `/api/upload` が S3 & SQS 動作 |
 | **6/15 (日)** | BE         | 抽出サービスを **S3 + SQS** 対応 (ダウンロード→チャンク化) │ embed\_service 呼び出しモック | 抽出ジョブ完走 & VectorDB upsert   |
-| **6/16 (月)** | BE         | `/api/factcheck` ルーター │ DynamoDB 結合 │ Bedrock 呼び出しモック           | `/api/factcheck` 返却 JSON    |
+| **6/16 (月)** | BE         | `/api/factcheck` ルーター │ DynamoDB 結合 │ Bedrock 呼び出し           | `/api/factcheck` 返却 JSON    |
 | **6/17 (火)** | BE         | `/api/suggest` ルーター │ APA citation Utility                      | `/api/suggest` 完成           |
 | **6/18 (水)** | BE         | `/api/feedback` ルーター │ LLM-Judge プロンプト                          | `/api/feedback` 完成          |
 | **6/19 (木)** | **FE**     | Next.js **Upload UI** │ WebSocket 基盤 │ eslint/prettier 設定       | ファイル送信 UI                   |
