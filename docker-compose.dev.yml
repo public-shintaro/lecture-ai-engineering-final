@@ -126,6 +126,7 @@ services:
       - UPLOAD_BUCKET=${UPLOAD_BUCKET}
       - EXTRACT_QUEUE_NAME=${EXTRACT_QUEUE_NAME}
       - VECTOR_TABLE_NAME=${VECTOR_TABLE_NAME}
+      - AWS_ENDPOINT_URL=http://localstack:4566
     volumes:
       - ./scripts:/scripts
     depends_on:
