@@ -58,7 +58,7 @@ services:
     # start.shは/appにコピーされるので、パスを修正
     command: sh /app/start.sh
     ports:
-      - "8000:8000"
+      - "8000:8080"
     environment:
       - PYTHONPATH=/app
       - AWS_REGION=${AWS_REGION}
