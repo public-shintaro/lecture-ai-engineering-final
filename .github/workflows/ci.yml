@@ -103,7 +103,7 @@ jobs:
       - name: Wait for services to be ready
         run: |
           echo "Waiting for extraction_service (port 8000)..."
-          timeout 60s bash -c 'until curl -s http://localhost:8000/api/v1/health; do sleep 1; done'
+          timeout 60s bash -c 'until curl -s http://localhost:8080/api/v1/health; do sleep 1; done'
 
           echo "Waiting for new API server (port 8001)..."
           # FastAPIが自動生成する/docsエンドポイントにアクセスして起動を確認
