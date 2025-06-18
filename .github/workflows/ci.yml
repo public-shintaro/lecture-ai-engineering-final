@@ -93,7 +93,7 @@ jobs:
           AWS_REGION=us-east-1
           AWS_ACCESS_KEY_ID=test
           AWS_SECRET_ACCESS_KEY=test
-          UPLOAD_BUCKET=slides-upload-dev
+          UPLOAD_BUCKET=lecture-slide-files
           EXTRACT_QUEUE_URL=http://localhost:4566/000000000000/slide-extract-queue
           EOF
 
