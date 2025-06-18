@@ -8,7 +8,7 @@ import requests
 # --- テスト用の設定 ---
 # APIサーバーのURLを環境変数から取得
 BASE_URL = os.getenv("UPLOAD_API_URL", "http://localhost:8001")
-API_URL = f"{BASE_URL}/api/upload"
+API_URL = f"{BASE_URL}/api/v1/document/embed"
 
 # LocalStackのエンドポイントURLを環境変数から取得
 # CIで設定する（ローカルテストでは手動で設定 or .env）
