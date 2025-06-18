@@ -35,7 +35,7 @@ jobs:
           EOF
       - name: Start services with Docker Compose
         # --- ここを修正 ---
-        run: docker compose -f docker-compose.dev.yml up --build -d
+        run: docker compose -f docker-compose.dev.yml up -d --build
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -100,18 +100,6 @@ jobs:
           # uvicornに--env-fileオプションを渡し、作成した設定ファイルを直接読み込ませる
           nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --env-file ./.env.ci > uvicorn.log 2>&1 &
 
-      - name: Init LocalStack resources
-        run: |
-          # awscli-localをインストール
-          pip install awscli-local
-
-          # LocalStackの準備が整うまで少し待つ
-          echo "Waiting for LocalStack service to be fully available..."
-          sleep 10
-
-          # 正しいエンドポイントを指定して初期化スクリプトを実行
-          AWS_ENDPOINT_URL=http://localhost:4566 sh ./scripts/init_localstack.sh
-
       - name: Wait for services to be ready
         run: |
           echo "Waiting for extraction_service (port 8000)..."
@@ -120,6 +108,15 @@ jobs:
           echo "Waiting for new API server (port 8001)..."
           # FastAPIが自動生成する/docsエンドポイントにアクセスして起動を確認
           timeout 60s bash -c 'until curl -s -o /dev/null http://localhost:8001/docs; do sleep 1; done'
+
+      - name: Wait init-localstack to finish
+        run: |
+          echo "⏳  waiting for init-localstack …"
+          timeout 120s bash -c '
+            until docker compose -f docker-compose.dev.yml logs init-localstack | \
+              grep -q "LocalStack resources initialized successfully."; do
+              sleep 2
+            done'
 
       - name: Run unit tests
         run: |
