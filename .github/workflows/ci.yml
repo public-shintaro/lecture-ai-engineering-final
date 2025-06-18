@@ -83,7 +83,7 @@ jobs:
           AWS_ENDPOINT_URL: http://localhost:4566
         run: |
           # サービスが起動するまで少し待機（最長60秒）
-          timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
+          timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8000/api/v1/health; do sleep 1; done'
 
       - name: Start additional API server in background
         run: |
