@@ -32,7 +32,7 @@ sqs = boto3.client(
 )
 
 # .envからバケット名とキューURLを取得
-UPLOAD_BUCKET = os.getenv("UPLOAD_BUCKET", "slides-upload-dev")
+UPLOAD_BUCKET = os.getenv("UPLOAD_BUCKET", "lecture-slide-files")
 EXTRACT_QUEUE_URL = os.getenv(
     "EXTRACT_QUEUE_URL", "http://localhost:4566/000000000000/slide-extract-queue"
 )
@@ -60,7 +60,7 @@ def test_upload_s3_sqs_e2e():
 
     # 3. S3にオブジェクトがアップロードされたか検証
     try:
-        s3.head_object(Bucket=UPLOAD_BUCKET, Key=f"{slide_id}.pptx")
+        s3.head_object(Bucket=UPLOAD_BUCKET, Key=f"{slide_id}/demo.pptx")
     except s3.exceptions.ClientError as e:
         assert False, f"S3 object not found: {e}"
 
@@ -79,7 +79,7 @@ def test_upload_s3_sqs_e2e():
     attrs = message["MessageAttributes"]
     assert attrs["slide_id"]["StringValue"] == slide_id
     assert attrs["bucket"]["StringValue"] == UPLOAD_BUCKET
-    assert attrs["s3_key"]["StringValue"] == f"{slide_id}.pptx"
+    assert attrs["s3_key"]["StringValue"] == f"{slide_id}/demo.pptx"
 
     # テスト後にメッセージを削除しておく
     sqs.delete_message(
