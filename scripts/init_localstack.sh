@@ -37,6 +37,15 @@ aws dynamodb create-table \
       AttributeName=slide_id,KeyType=HASH \
       AttributeName=chunk_id,KeyType=RANGE \
   --billing-mode PAY_PER_REQUEST \
+  --global-secondary-indexes '[
+      {
+        "IndexName": "SlideIdIndex",
+        "KeySchema": [
+          { "AttributeName": "slide_id", "KeyType": "HASH" }
+        ],
+        "Projection": { "ProjectionType": "ALL" }
+      }
+  ]' \
   --endpoint-url=$ENDPOINT_URL \
   || echo "Table slide_chunks already exists."
 

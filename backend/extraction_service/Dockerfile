@@ -6,8 +6,11 @@ FROM python:3.11-slim
 # build-essential等は不要なので削除し、イメージを軽量化
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libmagic1 \
+        libreoffice-core \
+        libreoffice-common \
+        libreoffice-draw \
         libreoffice-impress \
+        libmagic1 \
         unzip \
         curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
