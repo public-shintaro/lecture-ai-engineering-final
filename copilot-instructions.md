@@ -71,13 +71,11 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **6/14 土** | BE | feedback Router & DB │ LLM-Judge プロンプト (Bedrock) | `/api/feedback` |
 | **6/14 (土)** | **BE**     | **Step 8:** `aioboto3` で S3 保存／SQS Publish │ LocalStack で結合テスト  | `/api/upload` が S3 & SQS 動作 |
 | **6/15 (日)** | BE         | 抽出サービスを **S3 + SQS** 対応 (ダウンロード→チャンク化) │ embed\_service 呼び出しモック | 抽出ジョブ完走 & VectorDB upsert   |
-| **6/16 (月)** | BE         | `/api/factcheck` ルーター │ DynamoDB 結合 │ Bedrock 呼び出し           | `/api/factcheck` 返却 JSON    |
-| **6/17 (火)** | BE         | `/api/suggest` ルーター │ APA citation Utility                      | `/api/suggest` 完成           |
-| **6/18 (水)** | BE         | `/api/feedback` ルーター │ LLM-Judge プロンプト                          | `/api/feedback` 完成          |
-| **6/19 (木)** | **FE**     | Next.js **Upload UI** │ WebSocket 基盤 │ eslint/prettier 設定       | ファイル送信 UI                   |
-| **6/20 (金)** | FE │ テスト   | スライド **サムネ & ハイライト** 表示 │ PyTest 追加 │ CI 緑化                     | ハイライト描画 + CI ✅              |
-| **6/21 (土)** | FE │ Docs  | Q\&A / citation パネル │ ⭐️Feedback UI（星＋コメント） │ README 強化         | 4 画面 UI そろう<br>docs v0.9    |
-| **6/22 (日)** | **MVP 提出** | デモ動画収録・編集 │ 最終レポート仕上げ                                           | Bedrock MVP 一式              |
+| **6/17 (火)** | BE         | `/api/factcheck` ルーター │ DynamoDB 結合 │ Bedrock 呼び出し           | `/api/factcheck` 返却 JSON    |
+| **6/18 (水)** | **FE**     | Next.js **Upload UI** │ WebSocket 基盤 │ eslint/prettier 設定       | ファイル送信 UI                   |
+| **6/19 (木)** | FE │ テスト   | スライド **サムネ & ハイライト** 表示 │ PyTest 追加 │ CI 緑化                     | ハイライト描画 + CI ✅              |
+| **6/20 (金)** | FE │ Docs  | Q\&A / citation パネル │ ⭐️Feedback UI（星＋コメント） │ README 強化         | 4 画面 UI そろう<br>docs v0.9    |
+| **6/21 (土)** | **MVP 提出** | デモ動画収録・編集 │ 最終レポート仕上げ                                           | Bedrock MVP 一式              |
 
 ### note
 
@@ -104,3 +102,5 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **7/5 土** | 仕上げ | README/​docs 更新 │ Demo 追撮 │ バグ修正 | Stretch docs |
 | **7/6 日** | **Stretch 提出** | 最終デモ動画（OSS 比較含む）│ レポート追補 | Stretch 提出一式 |
 | **未定**   | **結果を元にpptxの修正案を考え書き戻すAgent** | `python-pptx`／`unoconv` 検証 │ レポート追補 | pptxの動的修正 |
+| **未定** | BE         | `/api/suggest` ルーター │ APA citation Utility                      | `/api/suggest` 完成           |
+| **未定** | BE         | `/api/feedback` ルーター │ LLM-Judge プロンプト                          | `/api/feedback` 完成          |

@@ -25,6 +25,33 @@ echo "Creating SQS queue: ${EXTRACT_QUEUE_NAME}"
 aws sqs create-queue --queue-name ${EXTRACT_QUEUE_NAME} --endpoint-url=$ENDPOINT_URL
 
 # DynamoDBテーブルの作成
+
+# ① slide_chunks
+echo "Creating DynamoDB table: slide_chunks"
+awslocal dynamodb create-table \
+  --table-name slide_chunks \
+  --attribute-definitions \
+      AttributeName=slide_id,AttributeType=S \
+      AttributeName=chunk_id,AttributeType=S \
+  --key-schema \
+      AttributeName=slide_id,KeyType=HASH \
+      AttributeName=chunk_id,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  || echo "Table slide_chunks already exists."
+
+# ② factcheck_results
+echo "Creating DynamoDB table: factcheck_results"
+awslocal dynamodb create-table \
+  --table-name factcheck_results \
+  --attribute-definitions \
+      AttributeName=slide_id,AttributeType=S \
+      AttributeName=id,AttributeType=S \
+  --key-schema \
+      AttributeName=slide_id,KeyType=HASH \
+      AttributeName=id,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  || echo "Table factcheck_results already exists."
+# ③ lecture_vector_store
 echo "Creating DynamoDB table: lecture-vector-store-dev"
 aws dynamodb create-table \
     --table-name lecture-vector-store-dev \
