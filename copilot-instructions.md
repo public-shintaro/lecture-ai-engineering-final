@@ -75,7 +75,9 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **6/18 (水)** | **FE**     | Next.js **Upload UI** │ WebSocket 基盤 │ eslint/prettier 設定       | ファイル送信 UI                   |
 | **6/19 (木)** | FE │ テスト   | スライド **サムネ & ハイライト** 表示 │ PyTest 追加 │ CI 緑化                     | ハイライト描画 + CI ✅              |
 | **6/20 (金)** | FE │ Docs  | Q\&A / citation パネル │ ⭐️Feedback UI（星＋コメント） │ README 強化         | 4 画面 UI そろう<br>docs v0.9    |
-| **6/21 (土)** | **MVP 提出** | デモ動画収録・編集 │ 最終レポート仕上げ                                           | Bedrock MVP 一式              |
+| **6/21 (土)** | **精度改善** | 実pptを用いてprompt改善による精度改善 │ 精度指標も決めて定量的に                                           | 精度検証結果             |
+| **6/22 (日)** | **MVP 提出** | デモ動画収録・編集 │ 最終レポート仕上げ                                           | Bedrock MVP 一式              |
+
 
 ### note
 
@@ -101,6 +103,6 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **7/4 金** | コスト最適 | Auto-pause OpenSearch PoC │ GPU Auto-scale Lambda | 料金レポート |
 | **7/5 土** | 仕上げ | README/​docs 更新 │ Demo 追撮 │ バグ修正 | Stretch docs |
 | **7/6 日** | **Stretch 提出** | 最終デモ動画（OSS 比較含む）│ レポート追補 | Stretch 提出一式 |
-| **未定**   | **結果を元にpptxの修正案を考え書き戻すAgent** | `python-pptx`／`unoconv` 検証 │ レポート追補 | pptxの動的修正 |
-| **未定** | BE         | `/api/suggest` ルーター │ APA citation Utility                      | `/api/suggest` 完成           |
-| **未定** | BE         | `/api/feedback` ルーター │ LLM-Judge プロンプト                          | `/api/feedback` 完成          |
+| **Drop**   | **結果を元にpptxの修正案を考え書き戻すAgent** | `python-pptx`／`unoconv` 検証 │ レポート追補 | pptxの動的修正 |
+| **Drop** | BE         | `/api/suggest` ルーター │ APA citation Utility                      | `/api/suggest` 完成           |
+| **Drop** | BE         | `/api/feedback` ルーター │ LLM-Judge プロンプト                          | `/api/feedback` 完成          |
