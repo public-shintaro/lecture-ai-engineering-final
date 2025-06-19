@@ -38,12 +38,6 @@ jobs:
       - name: Build images (no cache)
         run: docker compose -f docker-compose.dev.yml build --pull --no-cache extraction
 
-      # extraction が立ち上がるのを待つ
-      - name: Wait for extraction_service
-        run: |
-         timeout 90s \
-         bash -c 'until curl -s http://localhost:8000/api/v1/health; do sleep 3; done'
-
       - name: Start services with Docker Compose
         # --- ここを修正 ---
         run: docker compose -f docker-compose.dev.yml up -d --build
