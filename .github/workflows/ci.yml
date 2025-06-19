@@ -85,7 +85,7 @@ jobs:
 
       - name: Wait for services to be ready
         env:
-          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_ENDPOINT_URL=http://localstack:4566
         run: |
           # サービスが起動するまで少し待機（最長60秒）
           timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8080/api/v1/health; do sleep 1; done'
@@ -94,11 +94,11 @@ jobs:
         run: |
           # CI環境専用の.envファイルを作成する
           cat <<EOF > .env.ci
-          AWS_ENDPOINT_URL=http://localhost:4566
+          AWS_ENDPOINT_URL=http://localstack:4566
           AWS_REGION=us-east-1
           AWS_ACCESS_KEY_ID=test
           AWS_SECRET_ACCESS_KEY=test
-          UPLOAD_BUCKET=lecture-slide-files
+          UPLOAD_BUCKET=slide_chunks
           EXTRACT_QUEUE_URL=http://localhost:4566/000000000000/slide-extract-queue
           EOF
 
@@ -135,7 +135,7 @@ jobs:
       - name: Run end-to-end upload tests
         env:
           UPLOAD_API_URL: http://localhost:8001
-          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_ENDPOINT_URL: http://localstack:4566
         run: pytest tests/test_upload.py
 
       - name: Run end-to-end extraction tests
