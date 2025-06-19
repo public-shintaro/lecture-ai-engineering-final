@@ -10,3 +10,6 @@ uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload &
 echo "Starting SQS consumer in foreground..."
 # 修正点: consumer.pyへのパスを単純化
 python app/consumer.py
+
+# バックグラウンド・ジョブが 1 つでもあればシェルが終了しないように
+wait -n

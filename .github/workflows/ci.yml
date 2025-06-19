@@ -123,14 +123,9 @@ jobs:
               sleep 2
             done'
 
-      - name: Export endpoints & dummy AWS creds
+      - name: Add service host aliases
         run: |
-          {
-            echo "EXTRACTION_API_URL=http://localhost:8000"
-            echo "UPLOAD_API_URL=http://localhost:8081/api/v1/document/embed"
-            echo "AWS_ACCESS_KEY_ID=dummy"
-            echo "AWS_SECRET_ACCESS_KEY=dummy"
-          } >> "$GITHUB_ENV"
+          echo "127.0.0.1 extraction upload_service localstack" | sudo tee -a /etc/hosts
 
       - name: Run unit tests
         run: |
