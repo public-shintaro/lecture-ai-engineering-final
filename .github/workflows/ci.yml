@@ -107,7 +107,7 @@ jobs:
 
           echo "Waiting for new API server (port 8001)..."
           # FastAPIが自動生成する/docsエンドポイントにアクセスして起動を確認
-          timeout 60s bash -c 'until curl -s -o /dev/null http://localhost:8001/docs; do sleep 1; done'
+          timeout 60s bash -c 'until curl -s -o /dev/null http://localhost:8000/docs; do sleep 1; done'
 
       - name: Wait init-localstack to finish
         run: |
