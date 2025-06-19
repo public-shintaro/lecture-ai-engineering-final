@@ -25,6 +25,45 @@ echo "Creating SQS queue: ${EXTRACT_QUEUE_NAME}"
 aws sqs create-queue --queue-name ${EXTRACT_QUEUE_NAME} --endpoint-url=$ENDPOINT_URL
 
 # DynamoDBテーブルの作成
+
+# ① slide_chunks
+echo "Creating DynamoDB table: slide_chunks"
+aws dynamodb create-table \
+  --table-name slide_chunks \
+  --attribute-definitions \
+      AttributeName=slide_id,AttributeType=S \
+      AttributeName=chunk_id,AttributeType=S \
+  --key-schema \
+      AttributeName=slide_id,KeyType=HASH \
+      AttributeName=chunk_id,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  --global-secondary-indexes '[
+      {
+        "IndexName": "SlideIdIndex",
+        "KeySchema": [
+          { "AttributeName": "slide_id", "KeyType": "HASH" }
+        ],
+        "Projection": { "ProjectionType": "ALL" }
+      }
+  ]' \
+  --endpoint-url=$ENDPOINT_URL \
+  || echo "Table slide_chunks already exists."
+
+# ② factcheck_results
+echo "Creating DynamoDB table: factcheck_results"
+aws dynamodb create-table \
+  --table-name slide_chunks \
+  --attribute-definitions \
+      AttributeName=slide_id,AttributeType=S \
+      AttributeName=chunk_id,AttributeType=S \
+  --key-schema \
+      AttributeName=slide_id,KeyType=HASH \
+      AttributeName=chunk_id,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  --endpoint-url=$ENDPOINT_URL \
+  || echo "Table slide_chunks already exists."
+
+# ③ lecture_vector_store
 echo "Creating DynamoDB table: lecture-vector-store-dev"
 aws dynamodb create-table \
     --table-name lecture-vector-store-dev \

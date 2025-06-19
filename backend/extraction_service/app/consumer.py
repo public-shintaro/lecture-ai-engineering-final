@@ -22,7 +22,7 @@ AWS_REGION = os.environ.get("AWS_REGION", "ap-northeast-1")
 AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
 UPLOAD_BUCKET = os.environ["UPLOAD_BUCKET"]
 EXTRACT_QUEUE_URL = os.environ["EXTRACT_QUEUE_URL"]
-VECTOR_TABLE_NAME = os.environ["VECTOR_TABLE_NAME"]
+VECTOR_TABLE_NAME = os.getenv("VECTOR_TABLE_NAME", "slide_chunks")
 
 
 @asynccontextmanager

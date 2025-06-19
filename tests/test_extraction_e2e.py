@@ -7,15 +7,15 @@ import pytest
 import requests
 
 # --- Service Endpoints (コンテナ間の通信用にサービス名を使用) ---
-EXTRACTION_API_URL = "http://extraction:8000"
-UPLOAD_API_URL = (
-    "http://upload_service:8000/api/v1/upload"  # upload_serviceのコンテナ内ポートは8000
+EXTRACTION_API_URL = os.getenv("EXTRACTION_API_URL", "http://extraction:8080")
+UPLOAD_API_URL = os.getenv(
+    "UPLOAD_API_URL", "http://upload_service:8000/api/v1/document/embed"
 )
 
 # --- LocalStack Configuration ---
 LOCALSTACK_ENDPOINT_URL = "http://localstack:4566"
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-VECTOR_TABLE_NAME = os.environ.get("VECTOR_TABLE_NAME", "lecture-vector-store-dev")
+VECTOR_TABLE_NAME = os.environ.get("VECTOR_TABLE_NAME", "slide_chunks")
 
 
 @pytest.fixture(scope="module")
@@ -31,7 +31,7 @@ def test_extraction_service_health_check():
     extraction_serviceの/healthエンドポイントが正常に応答するかをテスト
     """
     try:
-        url = f"{EXTRACTION_API_URL}/health"
+        url = f"{EXTRACTION_API_URL}/api/v1/health"
         print(f"Pinging health check at: {url}")
         response = requests.get(url, timeout=10)
         response.raise_for_status()

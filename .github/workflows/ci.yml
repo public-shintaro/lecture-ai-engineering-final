@@ -24,18 +24,23 @@ jobs:
 
           # ---- LocalStack 初期化に必須 ----
           AWS_ENDPOINT_URL=http://localstack:4566
-          UPLOAD_BUCKET=slides-upload-dev
+          UPLOAD_BUCKET=lecture-slide-files
           EXTRACT_QUEUE_NAME=slide-extract-queue
           EXTRACT_QUEUE_URL=http://localstack:4566/000000000000/slide-extract-queue
-          VECTOR_TABLE_NAME=lecture-vector-store-dev
+          VECTOR_TABLE_NAME=slide_chunks
 
           # ---- アプリ固有 ----
           USE_DUMMY_EMBED=true      # Bedrock 呼び出しをスタブに
           MLFLOW_TRACKING_URI=http://mlflow:5000
           EOF
+
+      # .github/workflows/ci.yml から抜粋
+      - name: Build images (no cache)
+        run: docker compose -f docker-compose.dev.yml build --pull --no-cache extraction
+
       - name: Start services with Docker Compose
         # --- ここを修正 ---
-        run: docker compose -f docker-compose.dev.yml up --build -d
+        run: docker compose -f docker-compose.dev.yml up -d --build
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -80,46 +85,47 @@ jobs:
 
       - name: Wait for services to be ready
         env:
-          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_ENDPOINT_URL=http://localstack:4566
         run: |
           # サービスが起動するまで少し待機（最長60秒）
-          timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
+          timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8080/api/v1/health; do sleep 1; done'
 
       - name: Start additional API server in background
         run: |
           # CI環境専用の.envファイルを作成する
           cat <<EOF > .env.ci
-          AWS_ENDPOINT_URL=http://localhost:4566
+          AWS_ENDPOINT_URL=http://localstack:4566
           AWS_REGION=us-east-1
           AWS_ACCESS_KEY_ID=test
           AWS_SECRET_ACCESS_KEY=test
-          UPLOAD_BUCKET=slides-upload-dev
+          UPLOAD_BUCKET=lecture-slide-files
           EXTRACT_QUEUE_URL=http://localhost:4566/000000000000/slide-extract-queue
           EOF
 
           # uvicornに--env-fileオプションを渡し、作成した設定ファイルを直接読み込ませる
           nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8001 --env-file ./.env.ci > uvicorn.log 2>&1 &
 
-      - name: Init LocalStack resources
-        run: |
-          # awscli-localをインストール
-          pip install awscli-local
-
-          # LocalStackの準備が整うまで少し待つ
-          echo "Waiting for LocalStack service to be fully available..."
-          sleep 10
-
-          # 正しいエンドポイントを指定して初期化スクリプトを実行
-          AWS_ENDPOINT_URL=http://localhost:4566 sh ./scripts/init_localstack.sh
-
       - name: Wait for services to be ready
         run: |
           echo "Waiting for extraction_service (port 8000)..."
-          timeout 60s bash -c 'until curl -s http://localhost:8000/health; do sleep 1; done'
+          timeout 60s bash -c 'until curl -s http://localhost:8000/api/v1/health; do sleep 1; done'
 
           echo "Waiting for new API server (port 8001)..."
           # FastAPIが自動生成する/docsエンドポイントにアクセスして起動を確認
-          timeout 60s bash -c 'until curl -s -o /dev/null http://localhost:8001/docs; do sleep 1; done'
+          timeout 60s bash -c 'until curl -s -o /dev/null http://localhost:8000/docs; do sleep 1; done'
+
+      - name: Wait init-localstack to finish
+        run: |
+          echo "⏳  waiting for init-localstack …"
+          timeout 120s bash -c '
+            until docker compose -f docker-compose.dev.yml logs init-localstack | \
+              grep -q "LocalStack resources initialized successfully."; do
+              sleep 2
+            done'
+
+      - name: Add service host aliases
+        run: |
+          echo "127.0.0.1 extraction upload_service localstack" | sudo tee -a /etc/hosts
 
       - name: Run unit tests
         run: |
@@ -129,14 +135,15 @@ jobs:
       - name: Run end-to-end upload tests
         env:
           UPLOAD_API_URL: http://localhost:8001
-          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_ENDPOINT_URL: http://localstack:4566
         run: pytest tests/test_upload.py
 
       - name: Run end-to-end extraction tests
         run: |
           export EXTRACTION_API_URL="http://localhost:8000"
+          export UPLOAD_API_URL="http://localhost:8081/api/v1/document/embed"
           export MLFLOW_TRACKING_URI="http://localhost:5000"
-          pytest tests/extraction_e2e.py
+          pytest tests/test_extraction_e2e.py
 
       - name: Run end-to-end factcheck tests
         run: |

@@ -37,6 +37,6 @@ app.include_router(factcheck.router)
 app.include_router(vision.router)
 
 
-@app.get("/health")
+@app.get("/api/v1/health")
 def health_check():
     return {"status": "ok"}

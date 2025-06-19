@@ -6,6 +6,8 @@ requests
 uvicorn[standard]
 python-dotenv
 boto3
+fastapi
+pytest-asyncio
 
 # Development Tools
 awscli-local
