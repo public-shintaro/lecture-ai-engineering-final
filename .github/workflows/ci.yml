@@ -128,8 +128,6 @@ jobs:
           {
             echo "EXTRACTION_API_URL=http://localhost:8000"
             echo "UPLOAD_API_URL=http://localhost:8081/api/v1/document/embed"
-            echo "AWS_ACCESS_KEY_ID=dummy"
-            echo "AWS_SECRET_ACCESS_KEY=dummy"
           } >> "$GITHUB_ENV"
 
       - name: Run unit tests
