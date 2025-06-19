@@ -136,13 +136,13 @@ jobs:
 
       - name: Run end-to-end extraction tests
         run: |
-          export EXTRACTION_API_URL="http://localhost:8000"
+          export EXTRACTION_API_URL="http://localhost:8080"
           export MLFLOW_TRACKING_URI="http://localhost:5000"
           pytest tests/test_extraction_e2e.py
 
       - name: Run end-to-end factcheck tests
         run: |
-          export EXTRACTION_API_URL="http://localhost:8000"
+          export EXTRACTION_API_URL="http://localhost:8080"
           export MLFLOW_TRACKING_URI="http://localhost:5000"
           pytest tests/test_factcheck_metrics.py -v -s
 
