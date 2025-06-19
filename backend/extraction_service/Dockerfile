@@ -2,6 +2,10 @@
 
 FROM python:3.11-slim
 
+# LibreOffice が無人インストール＆ headless で動くように
+ENV DEBIAN_FRONTEND=noninteractive \
+    HOME=/tmp               # soffice が $HOME を参照するため
+
 # 1) 必要パッケージのインストール
 # build-essential等は不要なので削除し、イメージを軽量化
 RUN apt-get update && \
