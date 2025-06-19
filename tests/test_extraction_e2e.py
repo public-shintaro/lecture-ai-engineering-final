@@ -7,8 +7,10 @@ import pytest
 import requests
 
 # --- Service Endpoints (コンテナ間の通信用にサービス名を使用) ---
-EXTRACTION_API_URL = "http://extraction:8080"
-UPLOAD_API_URL = "http://upload_service:8000/api/v1/document/embed"  # upload_serviceのコンテナ内ポートは8000
+EXTRACTION_API_URL = os.getenv("EXTRACTION_API_URL", "http://extraction:8080")
+UPLOAD_API_URL = os.getenv(
+    "UPLOAD_API_URL", "http://upload_service:8000/api/v1/document/embed"
+)
 
 # --- LocalStack Configuration ---
 LOCALSTACK_ENDPOINT_URL = "http://localstack:4566"
