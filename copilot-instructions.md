@@ -2,8 +2,7 @@
 
 ## 概要
 
-C:\Users\0000100142\OneDrive - Sony\src\lecture-ai-engineering-final\docs\AIエンジニアリング実践講座（AIE2504) 最終課題.md
-の内容に従って、AIエンジニアリング実践講座の最終課題を実装します。
+AIエンジニアリング実践講座（AIE2504) 最終課題.mdの内容に従って、AIエンジニアリング実践講座の最終課題を実装します。
 
 ## 設計原則
 - DRY:"Don't Repeat Yourself"の略。同じコードを重複させず、一箇所にまとめるという原則
