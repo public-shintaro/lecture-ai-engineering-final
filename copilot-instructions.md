@@ -71,37 +71,29 @@ Apply the [general coding guidelines](https://google.github.io/styleguide/) to a
 | **6/14 (土)** | **BE**     | **Step 8:** `aioboto3` で S3 保存／SQS Publish │ LocalStack で結合テスト  | `/api/upload` が S3 & SQS 動作 |
 | **6/15 (日)** | BE         | 抽出サービスを **S3 + SQS** 対応 (ダウンロード→チャンク化) │ embed\_service 呼び出しモック | 抽出ジョブ完走 & VectorDB upsert   |
 | **6/17 (火)** | BE         | `/api/factcheck` ルーター │ DynamoDB 結合 │ Bedrock 呼び出し           | `/api/factcheck` 返却 JSON    |
-| **6/18 (水)** | **FE**     | Next.js **Upload UI** │ WebSocket 基盤 │ eslint/prettier 設定       | ファイル送信 UI                   |
-| **6/19 (木)** | FE │ テスト   | スライド **サムネ & ハイライト** 表示 │ PyTest 追加 │ CI 緑化                     | ハイライト描画 + CI ✅              |
-| **6/20 (金)** | FE │ Docs  | Q\&A / citation パネル │ ⭐️Feedback UI（星＋コメント） │ README 強化         | 4 画面 UI そろう<br>docs v0.9    |
-| **6/21 (土)** | **精度改善** | 実pptを用いてprompt改善による精度改善 │ 精度指標も決めて定量的に                                           | 精度検証結果             |
-| **6/22 (日)** | **MVP 提出** | デモ動画収録・編集 │ 最終レポート仕上げ                                           | Bedrock MVP 一式              |
 
+## リカバリー計画 <factckeckの実装>
+| 日付           | 主テーマ (3h)               | 具体的な完了基準                                                                                                                                                                                             |
+| ------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **6/20 (金)** | **スコープ凍結 & 既存タスク整理**    | \* FR2〜FR4 に関わるコード／CIステップをコメントアウトまたは削除<br>\* `README.md`・`docs/system_diagram.md` を Fact-Check 専用構成に更新<br>\* GitHub Projects ボードを本表に合わせて再編                                                           |
+| **6/21 (土)** | **CI / 静的解析をグリーンに**     | \* `vector_store.get_chunks_by_document_id` の `Optional` 対応で **mypy** エラー解消<br>\* `.github/workflows/ci.yml` に LibreOffice (headless) インストール追加<br>\* GitHub Actions で **pytest / Ruff / mypy** すべてパス |
+| **6/22 (日)** | **抽出 → S3 → SQS の堅牢化**  | \* PPTX → チャンク → S3 保存 & SQS メッセージ生成を LocalStack/AWS で検証<br>\* `tests/test_extraction_e2e.py` を追加し CI で自動確認                                                                                          |
+| **6/23 (月)** | **embed\_service 最小実装** | \* Bedrock Titan もしくは Sentence-Transformers で埋め込み生成 API を実装<br>\* ベクトルを Faiss (dev)／DynamoDB (prod想定) に格納<br>\* `mlflow.log_model` でモデル版管理                                                           |
+| **6/24 (火)** | **SQS コンシューマ実装**        | \* embed\_service に非同期バックグラウンドワーカーを追加し SQS 受信 → ベクトル upsert<br>\* 「PPTX アップロード ➜ ベクトル行が DB に追加」まで E2E で通る                                                                                            |
+| **6/25 (水)** | **Fact-Check コア実装**     | \* `factcheck.py` で RAG 取得＋LLM 照合ロジックを完成<br>\* 信頼度スコア・ハイライト位置を返すスキーマ確定                                                                                                                               |
+| **6/26 (木)** | **評価ハーネス & メトリクス**      | \* `scripts/eval_factcheck.py` で precision / recall を計算<br>\* `data/ground_truth/` と突き合わせて **top-5 precision ≥ 60 %** 達成                                                                             |
+| **6/27 (金)** | **サービス統合テスト**           | \* `pytest -m "e2e"` で docker-compose.dev を立ち上げ、抽出→埋込→Fact-Check を一括テスト                                                                                                                              |
+| **6/28 (土)** | **AWS へデプロイ (開発環境)**    | \* Docker イメージを ECR へ push<br>\* ECS Fargate または Lambda/API Gateway で最短ルートのデプロイ<br>\* 公開 URL で Smoke Test 成功                                                                                         |
+| **6/29 (日)** | **レポート & デモ動画草稿**       | \* スライドにアーキ・ドライバ・評価結果・スクリーンショットを整理<br>\* OBS などで 3 分程度のデモ録画                                                                                                                                          |
+| **6/30 (月)** | **仕上げ & 予備日**           | \* バグ取り・ドキュメント最終チェック・README 完全版<br>\* `v1.0` タグ付け＆提出                                                                                                                                                 |
 
-### note
+## ストレッチ〈LoRA 最小ファインチューニング & OSS 実行〉
 
-- 6 / 19〜21 は FE とテスト/ドキュメントを並行。午前 FE・午後テストのようにブロックを分けると 3 h 枠に収まりやすいです。
-- Bedrock 呼び出しはまず エンドポイント固定・レスポンスモック で UI/パイプラインを完成 → 6 / 20 までに本番呼び出しへ切替え。
-
-
-#### ── Stretch フェーズ：OSS-GPU (ECS) ＋ FR3/FR5 ──
-
-| 日付 | フェーズ | タスク | 期待アウトプット |
-|------|---------|--------|------------------|
-| **6/23 月** | GPU 基盤 | vLLM コンテナ (`gemma-3`) ビルド │ ECR push | `llm:v1` |
-| **6/24 火** | GPU 基盤 | LLaVA-NeXT コンテナ ビルド │ ECR push | `vision:v1` |
-| **6/25 水** | インフラ | ECS Cluster + Fargate GPU (g5.xl) │ ALB 作成 | GPU サービス起動 |
-| **6/26 木** | BE 切替 | FastAPI ルーターを **FeatureFlag** で OSS / Bedrock 切替可に | `/api/*` dual-path |
-| **6/27 金** | Embed 切替 | LambdaEmbed → bge/​gte (CPU) │ OpenSearch 書込み確認 | OSS ルート完成 |
-| **6/28 土** | **FR3 収集基盤** | RSS / X / Qiita クローラ │ `/crawl` バッチ | VectorDB 追加 |
-| **6/29 日** | **FR3 解析** | ポジネガ判定 │ キーフレーズ抽出 | `/analyze` |
-| **6/30 月** | **FR5 PDF** | Matplotlib グラフ │ `reportlab` PDF 組版 | Insight PDF |
-| **7/1 火** | 観測 | OpenTelemetry exporter │ Grafana Dashboard | Dash v0.1 |
-| **7/2 水** | 負荷試験 | k6 シナリオ作成 │ GPU / Bedrock 両ルート測定 | レイテンシ報告 |
-| **7/3 木** | LoRA (任意) | Gemma LoRA fine-tune (RTX 5080 夜間) | LoRA ckpt |
-| **7/4 金** | コスト最適 | Auto-pause OpenSearch PoC │ GPU Auto-scale Lambda | 料金レポート |
-| **7/5 土** | 仕上げ | README/​docs 更新 │ Demo 追撮 │ バグ修正 | Stretch docs |
-| **7/6 日** | **Stretch 提出** | 最終デモ動画（OSS 比較含む）│ レポート追補 | Stretch 提出一式 |
-| **Drop**   | **結果を元にpptxの修正案を考え書き戻すAgent** | `python-pptx`／`unoconv` 検証 │ レポート追補 | pptxの動的修正 |
-| **Drop** | BE         | `/api/suggest` ルーター │ APA citation Utility                      | `/api/suggest` 完成           |
-| **Drop** | BE         | `/api/feedback` ルーター │ LLM-Judge プロンプト                          | `/api/feedback` 完成          |
+| 日付          | 重点テーマ                   | 具体的タスク & 成果物                                                                                                                                                                                |
+| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **7/1 (火)** | **OSS 下調べ & データ整備**     | \* Fact-Check 向けに最小 LoRA が可能な OSS（`peft`, `unsloth`, `qlora`, `lora-scripts` など）を比較し 1 つ決定<br>\* `data/ground_truth/` を学習フォーマット（Alpaca-JSON）へ変換するスクリプト `scripts/prepare_lora_dataset.py` 作成 |
+| **7/2 (水)** | **環境セットアップ & 学習ジョブ開始**  | \* Dockerfile（`docker/lora_train.Dockerfile`）で CUDA / bitsandbytes / peft をインストール<br>\* `scripts/run_lora_train.sh` を用意し **TinyLlama-1.1B** など軽量モデルで学習をキック<br>\* MLflow 追跡を有効化              |
+| **7/3 (木)** | **モデル登録 & 推論 API 試作**   | \* 学習済み LoRA アダプタを `mlflow.log_model` → `models/lora_factcheck/` に登録<br>\* `factcheck_service/routers/lora_predict.py` を仮追加し、既存 LLM 呼び出しと差し替え可能に                                            |
+| **7/4 (金)** | **評価 & ベンチマーク**         | \* `scripts/eval_factcheck.py --model lora` で Precision / Recall を再計測し、baseline と比較<br>\* 目標: **top-5 precision +5 pt** 以上の改善                                                               |
+| **7/5 (土)** | **推論最適化 & コンテナ化**       | \* `auto_gptq` or `bitsandbytes-int4` で量子化 → 速度／VRAM を測定<br>\* `docker/lora_inference.Dockerfile` を作成し ECS/Lambda で動くイメージをビルド                                                               |
+| **7/6 (日)** | **ドキュメンテーション & 最終チェック** | \* README に “LoRA 最小構成手順” 追記、`docs/lora_report.md` に目的・手順・結果をまとめる<br>\* GitHub Release `v1.1-lora` タグ、CI で学習・評価ジョブが通ることを確認                                                                  |
