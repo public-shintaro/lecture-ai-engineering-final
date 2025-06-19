@@ -27,7 +27,7 @@ jobs:
           UPLOAD_BUCKET=lecture-slide-files
           EXTRACT_QUEUE_NAME=slide-extract-queue
           EXTRACT_QUEUE_URL=http://localstack:4566/000000000000/slide-extract-queue
-          VECTOR_TABLE_NAME=lecture-vector-store-dev
+          VECTOR_TABLE_NAME=slide_chunks
 
           # ---- アプリ固有 ----
           USE_DUMMY_EMBED=true      # Bedrock 呼び出しをスタブに
@@ -98,7 +98,7 @@ jobs:
           AWS_REGION=us-east-1
           AWS_ACCESS_KEY_ID=test
           AWS_SECRET_ACCESS_KEY=test
-          UPLOAD_BUCKET=slide_chunks
+          UPLOAD_BUCKET=lecture-slide-files
           EXTRACT_QUEUE_URL=http://localhost:4566/000000000000/slide-extract-queue
           EOF
 
