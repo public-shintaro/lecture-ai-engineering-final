@@ -42,7 +42,7 @@ jobs:
       - name: Wait for extraction_service
         run: |
          timeout 90s \
-         bash -c 'until curl -s http://localhost:8080/api/v1/health; do sleep 3; done'
+         bash -c 'until curl -s http://localhost:8000/api/v1/health; do sleep 3; done'
 
       - name: Start services with Docker Compose
         # --- ここを修正 ---
