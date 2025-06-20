@@ -1,45 +1,68 @@
-# 講義AIエンジニアリング 最終課題プロジェクト
+# 講義 AI エンジニアリング ★ 最終課題
 
-このプロジェクトは、講義スライドをAIでファクトチェックし、補足情報を提供することで、教育コンテンツの品質を向上させることを目的としています。
+PowerPoint 形式の講義スライドを **AI でファクトチェック (FR1)** するサンプルアプリです。
+
+* 💡 *FR2（質問サジェスト）/FR3（SNS リサーチ）などは現在スコープ外*
+* AWS を完全エミュレートする **LocalStack** と **MLflow** を含む **Docker‑Compose** で再現性の高い開発環境を提供します。
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start（VS Code Dev Container）
 
-開発環境を迅速に立ち上げるための手順です。VS CodeとDev Container拡張機能を使用していることを前提とします。
+```
+├─ .devcontainer/               # VS Code 開発用イメージ
+├─ backend/
+│   ├─ app/                     # FastAPI 共通設定・依存注入
+│   ├─ services/                # 業務ロジック層（将来機能拡張用）
+│   ├─ extraction_service/
+│   │   └─ app/                 # Extraction API エントリポイント
+│   ├─ upload_service/          # ファイル受取 API (Next.js UIと連携予定)
+│   └─ ...
+├─ docker-compose.dev.yml       # 開発用サービス定義
+├─ tests/                       # pytest + LocalStack
+└─ scripts/                     # init_localstack.sh 等の補助スクリプト
+```
 
-### 1. 開発環境の起動
+````
 
-1.  このリポジトリをクローンします。
-2.  VS Codeでリポジトリのフォルダを開きます。
-3.  VS CodeがDev Containerでの再オープンを推奨する通知を表示しますので、「Reopen in Container」をクリックします。
-4.  初回はコンテナのビルドに時間がかかります。ビルドが完了すると、開発に必要なツールがすべて含まれた環境が起動します。
+---
 
-### 2. 全サービスの起動
+## ⚙️ GitHub Actions / CI
 
-Dev Container内のターミナルで以下のコマンドを実行します。これにより、必要なすべてのサービス（Extraction API, MLflow UI）が起動します。
+- `.github/workflows/ci.yml` で **pytest / mypy / Ruff** を実行。
+- CI 内でも **docker-compose.dev.yml** を起動し、LocalStack + MLflow を再現します。
+- LibreOffice (headless) をインストールして PPTX 解析をテストします。
 
-```bash
-docker compose -f docker-compose.dev.yml up --build -d
+---
 
-### 3. 停止方法
+## 🏷️ 環境変数 (.env 例)
 
-以下のコマンドで、起動しているすべてのコンテナを停止・削除します。
+```dotenv
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=dummy
+AWS_SECRET_ACCESS_KEY=dummy
+AWS_ENDPOINT_URL=http://localstack:4566
+UPLOAD_BUCKET=lecture-slide-files
+EXTRACT_QUEUE_NAME=slide-extract-queue
+EXTRACT_QUEUE_URL=http://localstack:4566/000000000000/slide-extract-queue
+VECTOR_TABLE_NAME=lecture-vector-store-dev
+MLFLOW_TRACKING_URI=http://mlflow:5000
+````
 
-docker compose -f docker-compose.dev.yml down
+---
 
-### 4. サービス URL と利用方法
+## 🐞 トラブルシューティング
 
-サービス起動後、以下のURLにアクセスできます。
+| 症状                                       | 原因 & 解決                                             |
+| ---------------------------------------- | --------------------------------------------------- |
+| ブラウザで `http://localhost:8000/docs` が開けない | compose マッピングを確認 (`8000:8080`)。`docker ps` でポートを要確認 |
+| CI で "Connection refused"                | テスト中の URL が `localhost` になっていないか確認。サービス名でアクセスする     |
+| LocalStack のリソースが空っぽ                     | `scripts/init_localstack.sh` が完走しているか logs を確認      |
 
-- Extraction API (Swagger UI):
-  Windows/Macのブラウザから: http://localhost:8080/docs
-- MLflow UI:
-  Windows/Macのブラウザから: http://localhost:5000
+---
 
-サンプルAPI実行例
+## 📜 ライセンス
 
-Dev Container内のターミナルから、extractionサービスにサンプルPPTXファイルを送信して動作を確認します。
+このリポジトリは MIT License です。
 
-# プロジェクトのルートディレクトリで実行
-curl -X POST -F "file=@tests/test_sample.pptx" http://extraction:8080/extract
+---
