@@ -85,7 +85,7 @@ jobs:
 
       - name: Wait for services to be ready
         env:
-          AWS_ENDPOINT_URL:http://localstack:4566
+          AWS_ENDPOINT_URL: http://localstack:4566
         run: |
           # サービスが起動するまで少し待機（最長60秒）
           timeout 60s docker compose -f docker-compose.dev.yml exec -T extraction bash -c 'until curl -s http://localhost:8080/api/v1/health; do sleep 1; done'
