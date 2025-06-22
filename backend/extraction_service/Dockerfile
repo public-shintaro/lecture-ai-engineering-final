@@ -11,9 +11,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libreoffice-core \
+        libreoffice-base-core \
         libreoffice-common \
         libreoffice-draw \
         libreoffice-impress \
+        ghostscript \
+        fontconfig fonts-dejavu fonts-noto-cjk \
         libmagic1 \
         unzip \
         curl && \
