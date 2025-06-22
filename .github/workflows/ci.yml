@@ -76,7 +76,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            libreoffice-core libreoffice-base-core libreoffice-common libreoffice-impress libreoffice-writer ghostscript \
+            libreoffice-core libreoffice-base-core libreoffice-common libreoffice-impress libreoffice-writer  libreoffice-draw ghostscript \
             fontconfig fonts-dejavu fonts-noto-cjk libmagic1 unzip curl
 
       # pre-commitはCIで必要な開発ツールを別途インストールする必要があるため、
@@ -141,7 +141,7 @@ jobs:
 
       - name: Run end-to-end extraction tests
         env:
-          EXTRACTION_API_URL: http://extraction:8000
+          EXTRACTION_API_URL: http://localhost:8000
           UPLOAD_API_URL: http://localhost:8081/api/v1/document/embed
           MLFLOW_TRACKING_URI: http://localhost:5000
           AWS_ACCESS_KEY_ID: test
