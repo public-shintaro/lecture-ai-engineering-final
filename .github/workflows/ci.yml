@@ -14,7 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        with:
+          lfs: true        # ★ 追加：Git LFS オブジェクトを取得
       - name: Create .env file for CI
         run: |
           cat <<'EOF' > .env        # ← heredoc の方が楽
