@@ -1,6 +1,7 @@
 # tests/test_factcheck_metrics.py
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -9,7 +10,7 @@ import requests  # FastAPIサーバーへのHTTPリクエストにのみ依存
 # --- 定数設定 ---
 GROUND_TRUTH_DIR = Path(__file__).parent.parent / "data" / "ground_truth"
 # テスト対象のFastAPIサーバーのURL
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = os.getenv("UPLOAD_API_URL", "http://upload_service:8000")
 # /embedで取得したテストしたいdocument_id
 # 実際のテスト実行時には、ご自身のIDに書き換えてください
 TEST_DOCUMENT_ID = "86e3e0d8-2d58-473c-ba00-a4249b7fd222"
@@ -39,11 +40,9 @@ def get_predictions_from_api(doc_id: str) -> set[str]:
     FastAPIの/factcheckエンドポイントを呼び出し、
     「矛盾している」と予測されたchunk_idのセットを返す。
     """
-    url = f"{API_BASE_URL}/factcheck/{doc_id}"
+    url = f"{API_BASE_URL}/api/v1/factcheck"
     try:
-        # APIを呼び出す (タイムアウトを5分に設定)
-        response = requests.get(url, timeout=300)
-        # 200番台以外のステータスコードで例外を発生
+        response = requests.post(url, json={"slide_id": doc_id}, timeout=300)
         response.raise_for_status()
 
         predicted_inconsistencies = response.json()
@@ -95,6 +94,6 @@ def test_factcheck_precision_via_api():
     print(f"Required Threshold:   {PRECISION_THRESHOLD:.4f}")
 
     # 4. アサーション: 適合率が閾値以上であることを確認
-    assert (
-        precision >= PRECISION_THRESHOLD
-    ), f"適合率が閾値({PRECISION_THRESHOLD})を下回りました: {precision:.4f}"
+    assert precision >= PRECISION_THRESHOLD, (
+        f"適合率が閾値({PRECISION_THRESHOLD})を下回りました: {precision:.4f}"
+    )

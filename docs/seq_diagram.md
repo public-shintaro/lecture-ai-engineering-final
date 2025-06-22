@@ -49,7 +49,7 @@ sequenceDiagram
         ExtractionAPI -->>- User: A2. JSON chunks & PNG (同期)
     end
 ```
-
+![alt text](image-1.png)
 > **ポイント**
 >
 > * **Upload API** と **Extraction API** の両方を明示。開発環境では Extraction API に直接 POST して抽出を確認できます。
@@ -76,3 +76,4 @@ sequenceDiagram
     BedrockLLM -->> FactCheckAPI: 5. Verdict (score, citation)
     FactCheckAPI -->>- User: 6. JSON result (highlights, score)
 ```
+![alt text](image-2.png)

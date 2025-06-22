@@ -27,7 +27,7 @@ services:
       dockerfile: backend/upload_service/Dockerfile
     container_name: upload_service
     # 実行コマンドを修正
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command: ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8081:8000"
     volumes:
