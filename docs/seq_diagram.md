@@ -49,7 +49,6 @@ sequenceDiagram
         ExtractionAPI -->>- User: A2. JSON chunks & PNG (同期)
     end
 ```
-![alt text](image-1.png)
 > **ポイント**
 >
 > * **Upload API** と **Extraction API** の両方を明示。開発環境では Extraction API に直接 POST して抽出を確認できます。
@@ -57,6 +56,40 @@ sequenceDiagram
 > * Embedding Service まで含め、ベクトルが DynamoDB に保存されるところまで記載しています。
 
 ---
+# Sequence Diagram – Upload & Extraction (v1.1 scope)
+
+```mermaid
+sequenceDiagram
+    title ファイルアップロード & Extraction Service のシーケンス(SQS削除)
+    autonumber
+    participant Browser          as ブラウザ利用者
+    participant UploadAPI        as Upload API<br/>(FastAPI :9000)
+    participant S3raw            as S3 PPTX原本
+    participant Extraction       as Extraction Service<br/>(FastAPI :9100)
+    participant S3chunks         as S3 チャンク保存
+    participant Titan            as Bedrock Titan
+    participant DDB              as DynamoDB slide_chunks
+
+    Browser  ->> UploadAPI : 1. POST /upload (file, slide_id)
+    UploadAPI ->> S3raw    : 2. putObject(PPTX)
+    UploadAPI ->> Extraction: 3. POST /extract (binary body)
+    Extraction ->> S3chunks: 4. putObject(chunk_###.txt)*
+    Extraction -->> UploadAPI: 5. JSON [{"idx":0,"s3_key":…}, …]
+
+    %% ─── ここまで 1〜6 は従来どおり ───
+    loop 各 chunk
+        UploadAPI ->> S3chunks: 6. getObject(chunk_###.txt)
+        %% 変更点 : Step7 は Extraction Service へ送る
+        UploadAPI ->> Extraction: 7. POST /embed (text, slide_id, idx)
+        %% 以下 8–10 は Extraction Service 内部処理
+        Extraction ->> Titan: 8. invoke_model(text)
+        Titan -->> Extraction: 9. embedding[1536]
+        Extraction ->> DDB: 10. putItem(PK=slide_id#idx, embedding)
+        Extraction -->> UploadAPI: 11. OK
+    end
+
+    UploadAPI -->> Browser: 12. HTTP 200 OK {"chunks": N}
+```
 
 ## Sequence Diagram – FactCheck (v1 scope)
 
@@ -76,4 +109,3 @@ sequenceDiagram
     BedrockLLM -->> FactCheckAPI: 5. Verdict (score, citation)
     FactCheckAPI -->>- User: 6. JSON result (highlights, score)
 ```
-![alt text](image-2.png)

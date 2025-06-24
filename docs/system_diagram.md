@@ -78,7 +78,7 @@ graph TD
     FactCheckAPI -.-> VisionAPI
     VisionAPI -.-> GPUGroup
 ```
-![alt text](image.png)
+
 ---
 
 ## テキスト説明
@@ -86,7 +86,7 @@ graph TD
 | # | 処理                           | 主要サービス                         | 備考                            |
 | - | ---------------------------- | ------------------------------ | ----------------------------- |
 | 1 | スライド PPTX をアップロード            | **UploadAPI** (FastAPI)        | presigned URL 予定              |
-| 2 | S3 に保存 & SQS 抽出キューへ          | UploadAPI → S3Raw / SQSExtract | LocalStack で再現                |
+| 2 | S3 に保存 & SQS 抽出キューの予定だったがAPIで直接呼出しに変更          | UploadAPI → S3Raw / SQSExtract | LocalStack で再現                |
 | 3 | LibreOffice + Exparso でページ抽出 | Extraction Service             | JSON（テキスト）+ PNG を生成           |
 | 4 | 埋め込み要求を SQS へ                | Extractor → SQSEmbed           |                               |
 | 5 | Titan Embeddings でベクトル化      | Embedding Service              | DynamoDB VectorStore に upsert |
