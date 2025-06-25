@@ -92,6 +92,7 @@ def test_upload_s3_sqs_e2e():
 def test_upload_reject_non_pptx():
     """PPTX以外のファイルをアップロードした場合に正しく拒否されるかのテスト"""
     files = {"file": ("bad.txt", b"hello world", "text/plain")}
-    response = requests.post(API_URL, files=files)
+    data = {"slide_id": "dummy"}  # ★ slide_id を付ける
+    response = requests.post(API_URL, files=files, data=data)
     print(response.status_code, response.text)
     assert response.status_code == 400
