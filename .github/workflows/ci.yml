@@ -167,6 +167,13 @@ jobs:
               --create-bucket-configuration LocationConstraint="$AWS_REGION"
           done
 
+      - name: Debug who/where we are
+        run: |
+          echo "Caller identity ↓"
+          aws sts get-caller-identity
+          echo "Bucket region ↓"
+          aws s3api get-bucket-location --bucket lecture-slide-chunks || true
+
       - name: Run end-to-end extraction tests
         env:
           EXTRACTION_API_URL: http://localhost:8000
