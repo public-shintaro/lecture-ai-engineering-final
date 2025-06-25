@@ -26,11 +26,14 @@ RUN apt-get update && \
 WORKDIR /app
 
 # 3) 依存パッケージをコピーしてインストール (パスを単純化)
-COPY requirements.txt .
+COPY backend/extraction_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4) アプリケーションコードとその他ファイルをコピー (パスを単純化)
 # appディレクトリ、templatesディレクトリ、start.shなどをWORKDIR(/app)にコピー
-COPY ./app ./app
-COPY ./templates ./templates
-COPY ./start.sh .
+COPY backend/extraction_service/app ./app
+COPY backend/extraction_service/templates ./templates
+COPY backend/extraction_service/start.sh .
+COPY backend/aws_clients.py ./backend/aws_clients.py
+
+ENV PYTHONPATH=/app:/app/backend

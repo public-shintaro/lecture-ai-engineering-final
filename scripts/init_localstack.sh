@@ -21,8 +21,8 @@ echo "Creating S3 bucket: ${UPLOAD_BUCKET}"
 aws s3 mb s3://${UPLOAD_BUCKET} --endpoint-url=$ENDPOINT_URL || echo "S3 bucket ${UPLOAD_BUCKET} already exists."
 
 # SQSキューの作成
-echo "Creating SQS queue: ${EXTRACT_QUEUE_NAME}"
-aws sqs create-queue --queue-name ${EXTRACT_QUEUE_NAME} --endpoint-url=$ENDPOINT_URL
+#echo "Creating SQS queue: ${EXTRACT_QUEUE_NAME}"
+#aws sqs create-queue --queue-name ${EXTRACT_QUEUE_NAME} --endpoint-url=$ENDPOINT_URL
 
 # DynamoDBテーブルの作成
 

@@ -60,12 +60,11 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    title ファイルアップロード & Extraction Service のシーケンス(SQS削除)
     autonumber
     participant Browser          as ブラウザ利用者
-    participant UploadAPI        as Upload API<br/>(FastAPI :9000)
+    participant UploadAPI        as Upload API<br/>(FastAPI :8000)
     participant S3raw            as S3 PPTX原本
-    participant Extraction       as Extraction Service<br/>(FastAPI :9100)
+    participant Extraction       as Extraction Service<br/>(FastAPI :8080)
     participant S3chunks         as S3 チャンク保存
     participant Titan            as Bedrock Titan
     participant DDB              as DynamoDB slide_chunks
@@ -89,6 +88,7 @@ sequenceDiagram
     end
 
     UploadAPI -->> Browser: 12. HTTP 200 OK {"chunks": N}
+
 ```
 
 ## Sequence Diagram – FactCheck (v1 scope)

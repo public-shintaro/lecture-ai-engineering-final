@@ -11,4 +11,4 @@ aioboto3==12.4.0     # 追加したパッケージ
 jinja2
 pydantic
 scikit-learn
-
+httpx

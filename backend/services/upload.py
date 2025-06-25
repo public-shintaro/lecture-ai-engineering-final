@@ -1,5 +1,6 @@
 # backend/services/upload.py
 import os
+from io import BytesIO
 from typing import Dict, List
 
 import httpx
@@ -26,14 +27,18 @@ async def run_upload_sync(
     3. 各チャンク本文を S3 から取得し `/embed` へ同期 POST
     4. 結果としてチャンク数を返す
     """
+    # 0. アップロードファイルをメモリに保持
+    data: bytes = await file.read()  # ★ ここで読んで以後は閉じてもOK
+    buffer = BytesIO(data)
 
     # ----------------------------------------
     # 1. 元 PPTX を S3 にアップロード
     # ----------------------------------------
     raw_key = f"uploads/{slide_id}.pptx"
-    file.file.seek(0)
+    buffer.seek(0)
+
     s3_client.upload_fileobj(
-        Fileobj=file.file,
+        Fileobj=buffer,
         Bucket=RAW_BUCKET,
         Key=raw_key,
         ExtraArgs={"ContentType": file.content_type},  # ★ 追加
@@ -43,11 +48,11 @@ async def run_upload_sync(
     # 2. Extraction Service へバイナリ POST
     #    返り値: [{"idx": 0, "s3_key": "slide/.../chunk_000.txt"}, ...]
     # ----------------------------------------
-    file.file.seek(0)
+    buffer = BytesIO(data)  # ★ 再生成し直せば close 問題なし
     async with httpx.AsyncClient(timeout=180) as client:
         resp = await client.post(
             EXTRACT_URL,
-            files={"file": (file.filename, file.file, file.content_type)},
+            files={"file": (file.filename, buffer, file.content_type)},
             data={"slide_id": slide_id},
         )
     resp.raise_for_status()

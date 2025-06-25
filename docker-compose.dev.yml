@@ -46,17 +46,17 @@ services:
       - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
       - UPLOAD_BUCKET=${UPLOAD_BUCKET}
       - EXTRACT_QUEUE_URL=${EXTRACT_QUEUE_URL}
-      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL:-}
 
   # 2) 抽出サービス  ────────────────────────────
   extraction:
     build:
-      # 基準点をextraction_service自身のディレクトリに変更
-      context: ./backend/extraction_service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/extraction_service/Dockerfile
     container_name: extraction_service
     # start.shは/appにコピーされるので、パスを修正
-    command: sh /app/start.sh
+#    command: sh /app/start.sh
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
     ports:
       - "8000:8080"
     environment:
@@ -70,13 +70,8 @@ services:
       - UPLOAD_BUCKET=${UPLOAD_BUCKET}
       - EXTRACT_QUEUE_URL=${EXTRACT_QUEUE_URL}
       - VECTOR_TABLE_NAME=${VECTOR_TABLE_NAME}
-      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
-    volumes:
-      # 開発中のコード変更を反映させるため、ディレクトリ全体をマウント
-      - ./backend/extraction_service:/app
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL:-}
     depends_on:
-      init-localstack:
-        condition: service_completed_successfully
       mlflow:
         condition: service_started
     networks:

@@ -12,11 +12,11 @@ from __future__ import annotations
 import os
 from typing import List
 
+from app.services.parser import parse_pptx_to_texts
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
 
 from backend.aws_clients import s3 as s3_factory
-from backend.extraction_service.app.services.parser import parse_pptx_to_texts
 
 router = APIRouter(tags=["extract"])
 

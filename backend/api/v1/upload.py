@@ -1,5 +1,5 @@
 # backend/api/v1/upload.py
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
 
 from backend.aws_clients import s3 as s3_factory
@@ -15,6 +15,9 @@ class UploadResponse(BaseModel):
     chunks: int = Field(..., description="保存したチャンク数")
 
 
+@router.post(
+    "/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED
+)
 async def upload_slide(
     file: UploadFile = File(...),
     slide_id: str = Form(...),  # ← ブラウザから送られてくる

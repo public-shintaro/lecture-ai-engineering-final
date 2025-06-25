@@ -19,7 +19,7 @@ try:
     sync_dynamodb = boto3.resource(
         "dynamodb",
         region_name=os.environ.get("AWS_REGION", "ap-northeast-1"),
-        endpoint_url=os.environ.get("AWS_ENDPOINT_URL"),
+        endpoint_url=os.environ.get("AWS_ENDPOINT_URL") or None,
     )
     sync_table = sync_dynamodb.Table(table_name)
 

@@ -53,7 +53,7 @@ async def embed_chunk(payload: EmbedPayload):
     )
 
     try:
-        await vector_store.add_chunk(chunk)  # <- async call
+        vector_store.add_chunk(chunk)  # <- async call
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DynamoDB error: {e}")
 

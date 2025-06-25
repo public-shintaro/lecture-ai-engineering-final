@@ -3,3 +3,4 @@ aiofiles
 fastapi
 uvicorn[standard]
 aioboto3
+httpx
