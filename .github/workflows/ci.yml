@@ -140,6 +140,17 @@ jobs:
 #          AWS_ENDPOINT_URL: http://localstack:4566
         run: pytest tests/test_upload.py
 
+      - name: Debug S3 access
+        env:
+          AWS_REGION: us-east-1
+        run: |
+          set -e
+          echo "== head-bucket lecture-slide-chunks =="
+          aws s3api head-bucket --bucket lecture-slide-chunks --region us-east-1 || echo "❌ head-bucket failed"
+          echo "== put-object test =="
+          echo "test" > /tmp/ping.txt
+          aws s3 cp /tmp/ping.txt s3://lecture-slide-chunks/ci-ping.txt --region us-east-1 || echo "❌ put-object failed"
+
       - name: Run end-to-end extraction tests
         env:
           EXTRACTION_API_URL: http://localhost:8000
