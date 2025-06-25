@@ -142,8 +142,8 @@ jobs:
 
       - name: Run end-to-end extraction tests
         env:
-          EXTRACTION_API_URL: http://localhost:8080
-          UPLOAD_API_URL: http://localhost:8081
+          EXTRACTION_API_URL: http://localhost:8000
+          UPLOAD_API_URL: http://localhost:8081/api/v1/upload
           MLFLOW_TRACKING_URI: http://localhost:5000
         run: pytest tests/test_extraction_e2e.py
 
