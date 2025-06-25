@@ -134,22 +134,38 @@ jobs:
           # uploadテストはE2Eに移動したため、ここからは削除
           pytest tests/test_exparso_pptx.py
 
-      - name: Run end-to-end upload tests
+      - name: Run end-to-end upload tests(localstack)
         env:
           UPLOAD_API_URL: http://localhost:8081
 #          AWS_ENDPOINT_URL: http://localstack:4566
         run: pytest tests/test_upload.py
 
-      - name: Debug S3 access
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # --- A) 推奨: GitHub OIDC でロールを Assume --------------
+          #role-to-assume: arn:aws:123456789012:role/ci-role
+          #aws-region: us-east-1
+          # --- B) もしくは直接 AccessKey を渡す場合 ---------------
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # OIDCを使う場合は不要
+          aws-region:            us-east-1
+
+      # バケットが無ければ作る（権限テストも兼ねる）
+      - name: Ensure S3 buckets exist
         env:
           AWS_REGION: us-east-1
+          UPLOAD_BUCKET: lecture-slide-files
+          CHUNK_BUCKET: lecture-slide-chunks
         run: |
           set -e
-          echo "== head-bucket lecture-slide-chunks =="
-          aws s3api head-bucket --bucket lecture-slide-chunks --region us-east-1 || echo "❌ head-bucket failed"
-          echo "== put-object test =="
-          echo "test" > /tmp/ping.txt
-          aws s3 cp /tmp/ping.txt s3://lecture-slide-chunks/ci-ping.txt --region us-east-1 || echo "❌ put-object failed"
+          for b in "$UPLOAD_BUCKET" "$CHUNK_BUCKET"; do
+            aws s3api head-bucket --bucket "$b" 2>/dev/null || \
+            aws s3api create-bucket --bucket "$b" \
+              --region "$AWS_REGION" \
+              --create-bucket-configuration LocationConstraint="$AWS_REGION"
+          done
 
       - name: Run end-to-end extraction tests
         env:
