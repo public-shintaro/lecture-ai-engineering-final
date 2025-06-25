@@ -147,6 +147,7 @@ jobs:
           MLFLOW_TRACKING_URI: http://localhost:5000
           UPLOAD_BUCKET: lecture-slide-files
           CHUNK_BUCKET: lecture-slide-chunks
+          AWS_REGION: us-east-1
         run: pytest tests/test_extraction_e2e.py
 
 #      - name: Run end-to-end factcheck tests
