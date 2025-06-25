@@ -134,22 +134,50 @@ jobs:
           # uploadテストはE2Eに移動したため、ここからは削除
           pytest tests/test_exparso_pptx.py
 
-      - name: Run end-to-end upload tests
+      - name: Run end-to-end upload tests(localstack)
         env:
-          UPLOAD_API_URL: http://localhost:8001
-          AWS_ENDPOINT_URL: http://localstack:4566
+          UPLOAD_API_URL: http://localhost:8081
+#          AWS_ENDPOINT_URL: http://localstack:4566
         run: pytest tests/test_upload.py
 
-      # - name: Run end-to-end extraction tests
-      #   env:
-      #     EXTRACTION_API_URL: http://localhost:8000
-      #     UPLOAD_API_URL: http://localhost:8081/api/v1/document/embed
-      #     MLFLOW_TRACKING_URI: http://localhost:5000
-      #     AWS_ACCESS_KEY_ID: test
-      #     AWS_SECRET_ACCESS_KEY: test
-      #     AWS_ENDPOINT_URL: http://localstack:4566
-      #     AWS_REGION: us-east-1
-      #   run: pytest tests/test_extraction_e2e.py
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # --- A) 推奨: GitHub OIDC でロールを Assume --------------
+          #role-to-assume: arn:aws:123456789012:role/ci-role
+          #aws-region: us-east-1
+          # --- B) もしくは直接 AccessKey を渡す場合 ---------------
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # OIDCを使う場合は不要
+          aws-region:            us-east-1
+
+      # バケットが無ければ作る（権限テストも兼ねる）
+      - name: Ensure S3 buckets exist
+        env:
+          AWS_REGION: us-east-1
+          UPLOAD_BUCKET: lecture-slide-files
+          CHUNK_BUCKET: lecture-slide-chunks
+        run: |
+          set -e
+          for b in "$UPLOAD_BUCKET" "$CHUNK_BUCKET"; do
+            aws s3api head-bucket --bucket "$b" 2>/dev/null || \
+            aws s3api create-bucket --bucket "$b" \
+              --region "$AWS_REGION" \
+              --create-bucket-configuration LocationConstraint="$AWS_REGION"
+          done
+
+#以下二つはawsへのCIの権限設定が分からないので後でlocalstackに移行する
+#      - name: Run end-to-end extraction tests
+#        env:
+#          EXTRACTION_API_URL: http://localhost:8000
+#          UPLOAD_API_URL: http://localhost:8081/api/v1/upload
+#          MLFLOW_TRACKING_URI: http://localhost:5000
+#          UPLOAD_BUCKET: lecture-slide-files
+#          CHUNK_BUCKET: lecture-slide-chunks
+#          VECTOR_TABLE_NAME: slide_chunks
+#          AWS_REGION: us-east-1
+#        run: pytest tests/test_extraction_e2e.py
 
 #      - name: Run end-to-end factcheck tests
 #        run: |

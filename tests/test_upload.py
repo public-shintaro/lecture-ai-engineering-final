@@ -9,7 +9,7 @@ import requests
 # --- テスト用の設定 ---
 # APIサーバーのURLを環境変数から取得
 BASE_URL = os.getenv("UPLOAD_API_URL", "http://upload_service:8000")
-API_URL = f"{BASE_URL}/api/v1/document/embed"
+API_URL = f"{BASE_URL}/api/v1/upload"
 
 # LocalStackのエンドポイントURLを環境変数から取得
 # CIで設定する（ローカルテストでは手動で設定 or .env）
@@ -92,6 +92,7 @@ def test_upload_s3_sqs_e2e():
 def test_upload_reject_non_pptx():
     """PPTX以外のファイルをアップロードした場合に正しく拒否されるかのテスト"""
     files = {"file": ("bad.txt", b"hello world", "text/plain")}
-    response = requests.post(API_URL, files=files)
+    data = {"slide_id": "dummy"}  # ★ slide_id を付ける
+    response = requests.post(API_URL, files=files, data=data)
     print(response.status_code, response.text)
     assert response.status_code == 400

@@ -1,92 +1,88 @@
 # backend/services/upload.py
-from __future__ import annotations
-
-import inspect
-import json
 import os
-from datetime import datetime, timezone
-from uuid import uuid4
+from io import BytesIO
+from typing import Dict, List
 
-import aioboto3
+import httpx
+from fastapi import UploadFile
 
-from backend.aws_clients import ddb as ddb_factory
-from backend.aws_clients import s3 as s3_factory
+RAW_BUCKET = os.getenv("UPLOAD_BUCKET", "lecture-slide-files")
+CHUNK_BUCKET = os.getenv("CHUNK_BUCKET", "lecture-slide-chunks")
 
-# --- 環境変数 ------------------------------------------------------------
-BUCKET = os.getenv("UPLOAD_BUCKET", "lecture-slide-files")
-TABLE = "slide_chunks"
-QUEUE_URL = os.getenv("EXTRACT_QUEUE_URL")  # ★ 追加
-AWS_ENDPOINT_URL = os.getenv("AWS_ENDPOINT_URL")  # LocalStack or real
-AWS_REGION = os.getenv("AWS_REGION", "us-east-1")  # Region
-
-# ------------------------------------------------------------------------
+# Extraction Service のベース URL（docker-compose の service 名などに合わせる）
+EXTRACT_HOST = os.getenv("EXTRACTION_API_URL", "http://extraction:8080")
+EXTRACT_URL = f"{EXTRACT_HOST}/extract"
+EMBED_URL = f"{EXTRACT_HOST}/embed"
 
 
-async def _read_bytes(obj) -> bytes:
-    data = obj.read()
-    if inspect.isawaitable(data):  # UploadFile.read() は coroutine
-        data = await data
-    return data
-
-
-async def _send_extract_message(slide_id: str, s3_key: str) -> None:
-    """SQS へ抽出ジョブを投げる"""
-    if not QUEUE_URL:  # env が無い場合はスキップ
-        return
-
-    session = aioboto3.Session()
-    async with session.client(
-        "sqs", endpoint_url=AWS_ENDPOINT_URL, region_name=AWS_REGION
-    ) as sqs:
-        await sqs.send_message(
-            QueueUrl=QUEUE_URL,
-            MessageBody=json.dumps(
-                {
-                    "slide_id": slide_id,
-                    "s3_key": s3_key,
-                }
-            ),
-            # テストが期待する MessageAttributes
-            MessageAttributes={
-                "slide_id": {"DataType": "String", "StringValue": slide_id},
-                "bucket": {"DataType": "String", "StringValue": BUCKET},
-                "s3_key": {"DataType": "String", "StringValue": s3_key},
-            },
-        )
-
-
-async def run_upload(file_obj, *, s3_client=None, ddb_client=None) -> dict:
+async def run_upload_sync(
+    file: UploadFile,
+    slide_id: str,
+    *,
+    s3_client,
+) -> Dict[str, str | int]:
     """
-    1. bytes を読み出し
-    2. S3 put_object
-    3. DynamoDB put_item (ダミー1行)
-    4. SQS メッセージ送信
-    5. メタ JSON を返却
+    1. PPTX を RAW_BUCKET に保存
+    2. Extraction Service `/extract` へ同期 POST → [{idx, s3_key}, ...] 取得
+    3. 各チャンク本文を S3 から取得し `/embed` へ同期 POST
+    4. 結果としてチャンク数を返す
     """
-    s3 = s3_client or s3_factory()
-    ddb = ddb_client or ddb_factory()
-    table = ddb.Table(TABLE)
+    # 0. アップロードファイルをメモリに保持
+    data: bytes = await file.read()  # ★ ここで読んで以後は閉じてもOK
+    buffer = BytesIO(data)
 
-    slide_id = uuid4().hex
-    key = f"{slide_id}/{getattr(file_obj, 'filename', 'upload.bin')}"
+    # ----------------------------------------
+    # 1. 元 PPTX を S3 にアップロード
+    # ----------------------------------------
+    raw_key = f"uploads/{slide_id}.pptx"
+    buffer.seek(0)
 
-    body = await _read_bytes(file_obj)
-    s3.put_object(Bucket=BUCKET, Key=key, Body=body)
-
-    table.put_item(
-        Item={
-            "slide_id": slide_id,
-            "chunk_id": "c0000",
-            "page": 0,
-            "text": "dummy",
-        }
+    s3_client.upload_fileobj(
+        Fileobj=buffer,
+        Bucket=RAW_BUCKET,
+        Key=raw_key,
+        ExtraArgs={"ContentType": file.content_type},  # ★ 追加
     )
 
-    # 追加: SQS へ通知
-    await _send_extract_message(slide_id, key)
+    # ----------------------------------------
+    # 2. Extraction Service へバイナリ POST
+    #    返り値: [{"idx": 0, "s3_key": "slide/.../chunk_000.txt"}, ...]
+    # ----------------------------------------
+    buffer = BytesIO(data)  # ★ 再生成し直せば close 問題なし
+    async with httpx.AsyncClient(timeout=180) as client:
+        resp = await client.post(
+            EXTRACT_URL,
+            files={"file": (file.filename, buffer, file.content_type)},
+            data={"slide_id": slide_id},
+        )
+    resp.raise_for_status()
+    chunk_meta: List[dict] = resp.json()
 
+    # ----------------------------------------
+    # 3. 各チャンクの埋め込み生成を Extraction Service に依頼
+    #    (Upload API はテキストを取り出して /embed に渡すだけ)
+    # ----------------------------------------
+    for meta in chunk_meta:
+        obj = s3_client.get_object(Bucket=CHUNK_BUCKET, Key=meta["s3_key"])
+        text = obj["Body"].read().decode("utf-8")
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            embed_resp = await client.post(
+                EMBED_URL,
+                json={
+                    "text": text,
+                    "slide_id": slide_id,
+                    "idx": meta["idx"],
+                },
+            )
+        embed_resp.raise_for_status()  # 失敗時は例外を上げて FastAPI が 5xx 返す
+    file.file.close()  # ★ FD 解放
+
+    # ----------------------------------------
+    # 4. 呼び出し元 (/upload) へレスポンス
+    # ----------------------------------------
     return {
         "slide_id": slide_id,
-        "s3_key": key,
-        "uploaded_at": datetime.now(timezone.utc).isoformat(),
+        "s3_key": raw_key,
+        "chunks": len(chunk_meta),
     }

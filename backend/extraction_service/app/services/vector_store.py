@@ -31,7 +31,7 @@ class VectorStore:
         self.table = table
         logger.info(f"VectorStore initialized with table: '{self.table.name}'")
 
-    async def add_chunk(self, chunk: "Chunk"):
+    def add_chunk(self, chunk: "Chunk"):
         """
         単一のChunkオブジェクトをDynamoDBテーブルに非同期で追加する。
         """
@@ -45,7 +45,7 @@ class VectorStore:
                 item["embedding"] = [Decimal(str(x)) for x in item["embedding"]]
 
             # テーブルへの書き込みを非同期で実行
-            await self.table.put_item(Item=item)
+            self.table.put_item(Item=item)
 
             logger.debug(
                 f"Successfully put chunk to DynamoDB: {chunk.slide_id} / {chunk.chunk_id}"

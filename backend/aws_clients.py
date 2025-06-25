@@ -12,9 +12,7 @@ from botocore.config import Config
 
 # デフォルト値
 _DEFAULT_REGION = os.getenv("AWS_REGION", "us-east-1")  # デフォルトは us-east-1
-_LOCAL_ENDPOINT = os.getenv(
-    "AWS_ENDPOINT_URL"
-)  # LocalStack 用 (例: http://localstack:4566)
+_LOCAL_ENDPOINT = os.getenv("AWS_ENDPOINT_URL") or None
 
 
 def _session():

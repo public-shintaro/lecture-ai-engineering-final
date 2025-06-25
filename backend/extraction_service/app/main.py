@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from .dependencies import get_vector_store
 
 # 修正点: 相対パスでのインポートに変更
-from .routers import document, factcheck, vision
+from .routers import embed_chunk, extract, factcheck, vision
 
 # ロガーの設定
 logging.basicConfig(
@@ -32,7 +32,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # ルーターの登録
-app.include_router(document.router)
+app.include_router(extract.router)
+app.include_router(embed_chunk.router)
 app.include_router(factcheck.router)
 app.include_router(vision.router)
 
