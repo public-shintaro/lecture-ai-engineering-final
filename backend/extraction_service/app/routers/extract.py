@@ -27,6 +27,7 @@ MAX_CHARS = int(os.getenv("CHUNK_MAX_CHARS", "1500"))
 
 class ChunkMeta(BaseModel):
     idx: int = Field(0, description="チャンク番号 (0 origin)")
+    page: int = Field(..., description="元スライドのページ番号 (1 origin)")
     s3_key: str = Field(..., description="S3 オブジェクトキー")
 
 
@@ -65,7 +66,7 @@ async def extract_slide(
     # ---- チャンク化＋S3保存 ----
     metas: List[ChunkMeta] = []
     idx = 0
-    for slide_text in slide_texts:
+    for page_no, slide_text in enumerate(slide_texts, start=1):
         for chunk in _split_long_text(slide_text, MAX_CHARS):
             key = f"{slide_id}/chunk_{idx:03d}.txt"
             s3_client.put_object(
@@ -74,7 +75,7 @@ async def extract_slide(
                 Body=chunk.encode("utf-8"),
                 ContentType="text/plain",
             )
-            metas.append(ChunkMeta(idx=idx, s3_key=key))
+            metas.append(ChunkMeta(idx=idx, page=page_no, s3_key=key))
             idx += 1
 
     return metas

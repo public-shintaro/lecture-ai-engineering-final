@@ -95,17 +95,36 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    title FactCheck API シーケンス
+    title: FactCheck API (v1) – ページ単位＆スライド全体の流れ
 
-    participant User as ブラウザ利用者
-    participant FactCheckAPI as FactCheck API (/factcheck)
-    participant DynamoDB as DynamoDB VectorStore
-    participant BedrockLLM as Bedrock LLM
+    %% ─── 登場人物 ───────────────────────────────────────
+    participant U   as ユーザー／フロントエンド
+    participant API as FactCheck API<br/>(FastAPI `/factcheck`)
+    participant VS  as Vector Store<br/>(DynamoDB など)
+    participant LLM as Bedrock Claude 3 Sonnet
 
-    User ->>+ FactCheckAPI: 1. POST /factcheck (slide_id)
-    FactCheckAPI ->> DynamoDB: 2. Query (top‑k chunks)
-    DynamoDB -->> FactCheckAPI: 3. チャンク集合
-    FactCheckAPI ->> BedrockLLM: 4. Prompt with retrieved context
-    BedrockLLM -->> FactCheckAPI: 5. Verdict (score, citation)
-    FactCheckAPI -->>- User: 6. JSON result (highlights, score)
+    %% ─── 1. リクエスト ────────────────────────────────
+    U ->>+ API: POST `/factcheck` { slide_id, pages? }
+
+    Note right of API: `pages` 省略時は\nスライド内の全ページ番号を取得
+
+    %% ─── 2. ページごとの証拠取得＆検証 ───────────────
+    loop 各 page ∈ PAGES
+        API  ->> VS  : query(<slide_id, page>) → 上位チャンク
+        VS   -->> API: チャンク内容（テキスト＋メタデータ）
+
+        API  ->> LLM : 「page {{page}} をファクトチェック」＋コンテキスト
+        LLM  -->> API: verdict, issues[], citations[]
+
+        API  ->> API : per_page_results に追加
+    end
+
+    %% ─── 3. スライド全体サマリ（任意） ───────────────
+    alt PAGES.length > 1
+        API ->> LLM : 「スライド全体を総括」＋ per_page_results
+        LLM -->> API: slide_summary
+    end
+
+    %% ─── 4. レスポンス ───────────────────────────────
+    API -->>- U : 200 OK JSON\n{ per_page_results, slide_summary? }
 ```
