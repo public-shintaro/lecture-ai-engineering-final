@@ -69,10 +69,11 @@ async def run_upload_sync(
         async with httpx.AsyncClient(timeout=60) as client:
             embed_resp = await client.post(
                 EMBED_URL,
-                json={
+                json={  # ★page を追加
                     "text": text,
                     "slide_id": slide_id,
                     "idx": meta["idx"],
+                    "page": meta["page"],
                 },
             )
         embed_resp.raise_for_status()  # 失敗時は例外を上げて FastAPI が 5xx 返す

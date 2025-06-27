@@ -17,6 +17,7 @@ class EmbedPayload(BaseModel):
     text: str
     slide_id: str
     idx: int = Field(ge=0)
+    page: int = Field(gt=0)  # 1 origin
 
 
 @router.post(
@@ -48,7 +49,7 @@ async def embed_chunk(payload: EmbedPayload):
         slide_id=payload.slide_id,
         chunk_id=chunk_id,
         text=payload.text,
-        metadata={},  # 追加情報があればここに
+        metadata={"page": payload.page},
         embedding=vector,
     )
 

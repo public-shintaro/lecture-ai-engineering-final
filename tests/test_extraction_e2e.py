@@ -79,7 +79,6 @@ def test_upload_and_extraction_pipeline(dynamodb_resource):
     # --- DynamoDB で検証 ---
     table = dynamodb_resource.Table(VECTOR_TABLE_NAME)
     result = table.query(
-        IndexName="SlideIdIndex",
         KeyConditionExpression=Key("slide_id").eq(slide_id),
     )
     items = result.get("Items", [])
