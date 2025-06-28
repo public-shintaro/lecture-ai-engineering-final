@@ -78,7 +78,23 @@ services:
     networks:
       - backend-net
 
-  # 3) MLflow Tracking Server  ─────────────────
+  # 3) Streamlit Frontend ───────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile        # 下記 Dockerfile を用意
+    container_name: slide_frontend
+    ports:
+      - "8501:8501"                 # http://localhost:8501 で閲覧
+    environment:
+      - UPLOAD_API_URL=http://upload_service:8000/api/v1/upload
+      - FACTCHECK_API_URL=http://upload_service:8000/api/v1/factcheck
+    depends_on:
+      - upload_service
+    networks:
+      - backend-net
+
+  # 4) MLflow Tracking Server  ─────────────────
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.22.1
     container_name: mlflow_server
@@ -94,7 +110,7 @@ services:
     networks:
       - backend-net
 
-# 4) LocalStack  ──────────────────────────────
+# 5) LocalStack  ──────────────────────────────
   localstack:
     image: localstack/localstack:3.5
     container_name: localstack_container
@@ -109,7 +125,7 @@ services:
     networks:
       - backend-net
 
-# 5) 初期化用コンテナを追加
+# 6) 初期化用コンテナを追加
   init-localstack:
     image: amazon/aws-cli:2.15.19
     container_name: init_localstack_container
